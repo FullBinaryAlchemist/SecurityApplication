@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/back"
+    tools:context=".MainActivity">
+
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center|center_horizontal|center_vertical|fill_vertical"
+            android:orientation="vertical"
+            android:paddingLeft="40dp"
+            android:paddingRight="40dp">
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="wrap_content"
+                android:layout_height="150dp"
+                android:layout_marginTop="25dp"
+                android:maxWidth="10dp"
+                android:minWidth="10dp"
+                app:srcCompat="@mipmap/ic_launcher_round" />
+
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+
+                android:gravity="center"
+                android:shadowColor="#A3050101"
+                android:shadowRadius="25"
+                android:text="@string/signup"
+                android:textAlignment="center"
+                android:textColor="#FFF8F8"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/editText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/ed_cus"
+                android:ems="10"
+                android:hint="@string/full_name"
+                android:inputType="textPersonName"
+                android:paddingBottom="9dp"
+                android:paddingEnd="5dp"
+                android:paddingStart="20dp"
+                android:paddingTop="9dp"
+                android:textColor="#ffffff"
+                android:textColorHighlight="#F8FA0707"
+                android:textColorHint="#ffffff"
+                android:textColorLink="#00F30707"
+                android:textCursorDrawable="@android:color/holo_red_dark"
+                android:textSize="22sp" />
+
+
+            <Spinner
+                android:id="@+id/spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/ed_cus"
+                android:foreground="@drawable/ed_cus"
+                android:paddingLeft="11dp"
+                android:spinnerMode="dropdown"
+                android:textColor="#ffffff"
+                android:textColorHint="#ffffff"
+                android:textSize="22dp" />
+
+            <EditText
+                android:id="@+id/editText3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/ed_cus"
+                android:ems="10"
+                android:hint="@string/dob"
+                android:inputType="date"
+                android:paddingBottom="9dp"
+                android:paddingEnd="5dp"
+                android:paddingStart="20dp"
+                android:paddingTop="9dp"
+                android:textColor="#ffffff"
+                android:textColorHighlight="#F8FA0707"
+                android:textColorHint="#ffffff"
+                android:textColorLink="#00F30707"
+                android:textCursorDrawable="@android:color/holo_red_dark"
+                android:textSize="22sp" />
+
+            <EditText
+                android:id="@+id/editText4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/ed_cus"
+                android:ems="10"
+                android:hint="@string/email"
+                android:inputType="textEmailAddress"
+                android:paddingBottom="9dp"
+                android:paddingEnd="5dp"
+                android:paddingStart="20dp"
+                android:paddingTop="9dp"
+                android:textColor="#ffffff"
+                android:textColorHighlight="#F8FA0707"
+                android:textColorHint="#ffffff"
+                android:textCursorDrawable="@android:color/holo_red_dark"
+                android:textSize="22sp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="25dp"
+                app:hintEnabled="false"
+                app:passwordToggleEnabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/padd"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ed_cus"
+                    android:hint="@string/password"
+                    android:inputType="textWebPassword"
+                    android:paddingBottom="9dp"
+                    android:paddingEnd="5dp"
+                    android:paddingStart="20dp"
+                    android:paddingTop="9dp"
+                    android:textColor="#ffffff"
+                    android:textColorHighlight="#F8FA0707"
+                    android:textColorHint="#ffffff"
+                    android:textColorLink="#00F30707"
+                    android:textCursorDrawable="@android:color/holo_red_dark"
+                    android:textSize="22sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="25dp"
+                app:hintEnabled="false"
+                app:passwordToggleEnabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/cpassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/ed_cus"
+                    android:hint="@string/confirm_password"
+                    android:inputType="textWebPassword"
+                    android:paddingBottom="9dp"
+                    android:paddingEnd="5dp"
+                    android:paddingStart="20dp"
+                    android:paddingTop="9dp"
+                    android:textColor="#ffffff"
+                    android:textColorHighlight="#F8FA0707"
+                    android:textColorHint="#ffffff"
+                    android:textColorLink="#00F30707"
+                    android:textCursorDrawable="@android:color/holo_red_dark"
+                    android:textSize="22sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="50dp"
+                android:layout_marginTop="30dp"
+                android:background="@drawable/btn_cus"
+                android:paddingBottom="9dp"
+                android:paddingTop="9dp"
+                android:text="@string/submit"
+                android:textColor="#000000"
+                android:textColorHint="#ffffff"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+
+
+        </LinearLayout>
+    </ScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
