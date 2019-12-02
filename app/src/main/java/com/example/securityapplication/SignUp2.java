@@ -12,14 +12,19 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import com.example.securityapplication.model.User;
 
+import java.util.regex.Pattern;
 
 
 public class SignUp2 extends AppCompatActivity {
@@ -39,9 +44,10 @@ public class SignUp2 extends AppCompatActivity {
     private InputValidation inputValidation;
     private  SQLiteDBHelper DBHelper;
     private User user;
-
+    private String blockcharset = "~#^|$%&*!,.";
     //adding requestCode variable for requestPermission
     private int RC;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +75,7 @@ public class SignUp2 extends AppCompatActivity {
 
         error_message = findViewById(R.id.error_message);
         btn_submit = findViewById(R.id.btn_submit);
+
     }
 
     private void initListeners(){
@@ -76,71 +83,103 @@ public class SignUp2 extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //Call the method to validate the fields
-                boolean empty = inputValidation.is_Empty(input_mobile,mobile,getString(R.string.message)) || //NOTE:Changed previously '&&' to '||'
-                        inputValidation.is_Empty(input_aadhar,aadhar,getString(R.string.message)) ||
-                        inputValidation.is_Empty(input_location,location,getString(R.string.message));
+                boolean valid_mobile = false;
+                boolean valid_aadhar = false;
+                boolean valid_location = false;
+                boolean empty_mobile = inputValidation.is_Empty(input_mobile, "PLEASE ENTER MOBILE NO. ");
+                if (!empty_mobile) {
+                    if (!inputValidation.isMinLength(input_mobile, 10, getString(R.string.no_phone)) || !inputValidation.is_numeric(input_mobile)) {
 
-                if(inputValidation.is_Empty(input_mobile,mobile,getString(R.string.no_phone))){
-                    input_mobile.setError(getString(R.string.no_phone));
+                        input_mobile.setError(getString(R.string.no_phone));
+
+                    }
+                     else {
+                        valid_mobile = true;
+                        input_mobile.setError(null);
+                    }
                 }
-                if(inputValidation.is_Empty(input_aadhar,aadhar,getString(R.string.no_aadhar))){
-                    input_aadhar.setError(getString(R.string.no_aadhar));
+
+                boolean empty_aadhar = inputValidation.is_Empty(input_aadhar, getString(R.string.no_aadhar));
+                if (!empty_aadhar) {
+                    if (!inputValidation.isMinLength(input_aadhar, 12, getString(R.string.no_aadhar)) ||
+                            !inputValidation.is_numeric(input_aadhar)) {
+
+                                input_aadhar.setError(getString(R.string.no_aadhar));
+                        }
+
+                    else {
+                        valid_aadhar = true;
+                        input_aadhar.setError(null);
+                    }
                 }
-                if(inputValidation.is_Empty(input_location,location,getString(R.string.no_location))){
+
+                if (input_location.getText().toString().isEmpty()) {
                     input_location.setError(getString(R.string.no_location));
                 }
-                //NOTE:MOVED empty if statement here to ensure error messages are displayed before exiting
-                if(empty){
-                    return;
+                else{
+                    valid_location = true;
+                    input_location.setError(null);
                 }
+                /**NOTE:MOVED empty if statement here to ensure error messages are displayed before exiting
+                 //if(empty){
+                 //  return;
+
+                 }*/
 
                 //Moved IMEI reading code to this place so IMEI can be stored for user object
-                String imei = null;
-                TelephonyManager tm = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+                boolean empty = inputValidation.all_Empty(input_mobile,input_aadhar,input_location,getString(R.string.message));
 
-                String permission = Manifest.permission.READ_PHONE_STATE;
-                int res = getApplicationContext().checkCallingOrSelfPermission(permission);
-                if (res == PackageManager.PERMISSION_GRANTED){
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        imei = tm.getImei(1);
-                        Log.d("IMEI","IMEI Number of slot 1 is:"+imei);
+                Log.d("SIgnUP2"," Valid Aadhar:"+valid_aadhar+" Valid Mobile:"+valid_mobile+" Valid Location:"+valid_location);
+                boolean valid = valid_mobile && valid_aadhar && valid_location;
 
+                Log.d("SIgnUP2","Empty:"+empty+" Valid"+valid);
+
+                //NOTE: Allow database entry only if not empty AND valid
+                if(!empty && valid){
+                    String imei = null;
+                    TelephonyManager tm = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+                    String permission = Manifest.permission.READ_PHONE_STATE;
+                    int res = getApplicationContext().checkCallingOrSelfPermission(permission);
+                    if (res == PackageManager.PERMISSION_GRANTED) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            imei = tm.getImei(1);
+                            Log.d("IMEI", "IMEI Number of slot 1 is:" + imei);
+
+                        } else {
+                            imei=tm.getDeviceId();
+                            Log.d("SignUp2", "SDK Version not of required level");
+                            Log.d("SignUp2", "Using getDeviceId()"+imei);
+
+                        }
+                    } else {
+                        Log.d("SIgnUP2", "PERMISSION FOR READ STATE NOT GRANTED, REQUESTING PERMSISSION...");
+                        ActivityCompat.requestPermissions(activity,
+                                new String[]{Manifest.permission.READ_PHONE_STATE}, RC);
                     }
-                    else
-                    {
-                        Log.d("SignUp2","SDK Version not of required level");
+
+
+                    if (DBHelper.checkUser(input_aadhar.getText().toString().trim()) ){
+
+                        user.setMobile(input_mobile.getText().toString().trim());
+                        user.setAadhar(input_aadhar.getText().toString().trim());
+                        user.setLocation(input_location.getText().toString().trim());
+                        user.setImei(imei);//setting IMEI
+                        //added conditional checking and showing respective Toast message
+                        if (DBHelper.addUser(user))
+                        {   Toast.makeText(getApplicationContext(), "YOU ARE NOW A SAVIOUR", Toast.LENGTH_LONG).show();
+                            setResult(10,null);//to finish sing up 1 activity
+                            activity.finish();}
+                        else
+                            Toast.makeText(getApplicationContext(), "SOMETHING WENT WRONG", Toast.LENGTH_LONG).show();
+
+                    } else {
+                        Log.d("SIgnUp2", "User exists ");
+                        Toast.makeText(getApplicationContext(), "AADHAR NO ALREADY EXISTS", Toast.LENGTH_LONG).show();
                     }
-                }
-                else{
-                    Log.d("SIgnUP2","PERMISSION FOR READ STATE NOT GRANTED, REQUESTING PERMSISSION...");
-                    ActivityCompat.requestPermissions(activity,
-                            new String[]{Manifest.permission.READ_PHONE_STATE},RC);
-                }
-
-
-                if(!DBHelper.checkUser(input_aadhar.getText().toString().trim()) && !empty){
-                    user.setMobile(input_mobile.getText().toString().trim());
-                    user.setAadhar(input_aadhar.getText().toString().trim());
-                    user.setLocation(input_location.getText().toString().trim());
-                    //setting IMEI
-                    user.setImei(imei);
-                    //added conditional checking and showing respective Toast message
-                    if(DBHelper.addUser(user))
-                        Toast.makeText(getApplicationContext(),"YOU ARE NOW A SAVIOUR", Toast.LENGTH_LONG).show();
-                    else
-                        Toast.makeText(getApplicationContext(),"SOMETHING WENT WRONG", Toast.LENGTH_LONG).show();
+                }//
 
                 }
-                else{
-                    Log.d("SIgnUP2","User exists ");
-                    Toast.makeText(getApplicationContext(),"AADHAR NO ALREADY EXISTS", Toast.LENGTH_LONG).show();
-                }
-
-
-
-
-            }
-
+            //
             }
 
         );

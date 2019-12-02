@@ -1,5 +1,8 @@
 package com.example.securityapplication.model;
 
+
+import java.util.Date;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -13,6 +16,7 @@ public class User implements Parcelable {
     private String aadhar;
     private String location;
     private String imei;
+    private String dob;
 
     public String getDob() {
         return dob;
@@ -22,7 +26,6 @@ public class User implements Parcelable {
         this.dob = dob;
     }
 
-    private String dob;
 
     public User(){}
 

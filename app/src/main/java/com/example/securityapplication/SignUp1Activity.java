@@ -3,6 +3,7 @@ package com.example.securityapplication;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.database.Cursor;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
@@ -118,18 +119,19 @@ private TextInputEditText textinputName,textinputDOB,textinputEmail,textinputPas
                 textinputEmail.getText().toString().trim(),
                 textinputPass.getText().toString().trim());
         if (isInserted) {
-            textinputName.setText(null);
-            gender_grp.clearCheck();
-            textinputDOB.setText(null);
-            textinputEmail.setText(null);
-            textinputPass.setText(null);
-            textinputCnfPass.setText(null);
+//            textinputName.setText(null);
+//            gender_grp.clearCheck();
+//            textinputDOB.setText(null);
+//            textinputEmail.setText(null);
+//            textinputPass.setText(null);
+//            textinputCnfPass.setText(null);
             //updates the Usr object with filled fields
             user=myDb.getUser();
             //starting signup activity
             Intent intent=new Intent(SignUp1Activity.this,SignUp2.class);
             intent.putExtra("User",user);
-            startActivity(intent);
+            startActivityForResult(intent,1);
+
         }
         else {
             String UserEmail = textinputEmail.getText().toString().trim();
@@ -142,4 +144,12 @@ private TextInputEditText textinputName,textinputDOB,textinputEmail,textinputPas
            }
         }
    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode==10 && requestCode==1)
+            finish();
+
+    }
 }

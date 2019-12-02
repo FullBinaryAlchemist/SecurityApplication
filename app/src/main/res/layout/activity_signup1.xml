@@ -69,10 +69,10 @@
                     android:hint="Full Name"
                     android:inputType="textPersonName"
                     android:maxLength="40"
+                    android:paddingBottom="9dp"
+                    android:paddingEnd="5dp"
                     android:paddingStart="20dp"
                     android:paddingTop="9dp"
-                    android:paddingEnd="5dp"
-                    android:paddingBottom="9dp"
                     android:textColor="#ffffff"
                     android:textColorHighlight="#F8FA0707"
                     android:textColorHint="#ffffff"
@@ -80,52 +80,64 @@
                     android:textCursorDrawable="@android:color/holo_red_dark"
                     android:textSize="18sp" />
             </android.support.design.widget.TextInputLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center|center_horizontal|center_vertical|fill_vertical"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp"
-            >
 
-            <TextView
-                android:id="@+id/text_gender"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:text="Gender : "
-                android:textColor="#FFFFFF"
-                android:textSize="18sp" />
-
-            <RadioGroup
-                android:id="@+id/radiogrp"
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/textlayout_radio"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                >
+                android:layout_marginTop="10dp"
+                android:textColorHint="#FFFFFF"
+                app:counterEnabled="false"
+                app:errorEnabled="true"
+                app:hintEnabled="false">
 
-
-                <RadioButton
-                    android:id="@+id/radioButton_male"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingStart="5dp"
-                    android:text="Male"
-                    android:layout_marginLeft="5dp"
-                    android:textColor="#FFFFFF"
-                    android:textSize="18sp" />
 
-                <RadioButton
-                    android:id="@+id/radioButton_female"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="5dp"
-                    android:text="Female"
-                    android:textColor="#FFFFFF"
-                    android:textSize="18sp"/>
+                    android:orientation="horizontal"
 
-            </RadioGroup>
-        </LinearLayout>
+                    >
+
+                    <TextView
+                        android:id="@+id/text_gender"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:text="Gender : "
+                        android:textColor="#FFFFFF"
+                        android:textSize="18sp" />
+
+                    <RadioGroup
+                        android:id="@+id/radiogrp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+
+                        <RadioButton
+                            android:id="@+id/radioButton_male"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp"
+                            android:paddingStart="5dp"
+                            android:text="Male"
+                            android:textColor="#FFFFFF"
+                            android:textSize="18sp" />
+
+                        <RadioButton
+                            android:id="@+id/radioButton_female"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="5dp"
+                            android:text="Female"
+                            android:textColor="#FFFFFF"
+                            android:textSize="18sp" />
+
+                    </RadioGroup>
+
+                </LinearLayout>
+            </android.support.design.widget.TextInputLayout>
 
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/textlayout_Dob_outer"
@@ -139,22 +151,25 @@
 
                 <android.support.design.widget.TextInputEditText
                     android:id="@+id/textlayout_Dob"
-
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/ed_cus"
+                    android:editable="false"
                     android:ems="10"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
                     android:hint="DOB"
                     android:inputType="date"
-                    android:paddingBottom="9dp"
-                    android:paddingEnd="5dp"
                     android:paddingStart="20dp"
                     android:paddingTop="9dp"
+                    android:paddingEnd="5dp"
+                    android:paddingBottom="9dp"
                     android:textColor="#ffffff"
                     android:textColorHighlight="#F8FA0707"
                     android:textColorHint="#ffffff"
                     android:textColorLink="#00F30707"
                     android:textCursorDrawable="@android:color/holo_red_dark"
+                    android:textIsSelectable="false"
                     android:textSize="18sp" />
             </android.support.design.widget.TextInputLayout>
 
@@ -177,10 +192,10 @@
                     android:ems="10"
                     android:hint="Email"
                     android:inputType="textEmailAddress"
-                    android:paddingBottom="9dp"
-                    android:paddingEnd="5dp"
                     android:paddingStart="20dp"
                     android:paddingTop="9dp"
+                    android:paddingEnd="5dp"
+                    android:paddingBottom="9dp"
                     android:textColor="#ffffff"
                     android:textColorHighlight="#F8FA0707"
                     android:textColorHint="#ffffff"
@@ -195,9 +210,10 @@
                 android:layout_height="match_parent"
                 android:layout_marginTop="10dp"
                 android:clickable="true"
+                app:errorEnabled="true"
                 app:hintEnabled="false"
                 app:passwordToggleEnabled="true"
-                app:passwordToggleTint="@color/colorAccent">
+                app:passwordToggleTint="#FFF">
 
                 <android.support.design.widget.TextInputEditText
                     android:id="@+id/textlayout_Pass"
@@ -205,13 +221,15 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/ed_cus"
                     android:hint="@string/password"
-                    android:inputType="textPassword"
-                    android:paddingBottom="9dp"
-                    android:paddingEnd="5dp"
+                    android:inputType="text|textPassword"
                     android:paddingStart="20dp"
                     android:paddingTop="9dp"
+                    android:paddingEnd="5dp"
+                    android:paddingBottom="9dp"
                     android:textColor="#FFFFFF"
+                    android:textColorHighlight="#F8FA0707"
                     android:textColorHint="#FFFFFF"
+                    android:textColorLink="@color/white"
                     android:textSize="18sp" />
             </android.support.design.widget.TextInputLayout>
 
@@ -220,9 +238,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="10dp"
+                app:errorEnabled="true"
                 app:hintEnabled="false"
                 app:passwordToggleEnabled="true"
-                app:passwordToggleTint="@color/colorAccent">
+                app:passwordToggleTint="#FFF">
 
                 <android.support.design.widget.TextInputEditText
                     android:id="@+id/textlayout_CnfPass"
@@ -231,10 +250,12 @@
                     android:background="@drawable/ed_cus"
                     android:hint="@string/confirm_password"
                     android:inputType="textPassword"
-                    android:paddingBottom="9dp"
-                    android:paddingEnd="5dp"
                     android:paddingStart="20dp"
                     android:paddingTop="9dp"
+                    android:paddingEnd="5dp"
+                    android:paddingBottom="9dp"
+                    android:textColor="#ffffff"
+                    android:textColorHighlight="#F8FA0707"
                     android:textColorHint="#FFFFFF"
                     android:textSize="18sp" />
             </android.support.design.widget.TextInputLayout>

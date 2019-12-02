@@ -1,6 +1,7 @@
 package com.example.securityapplication;
 
 //import android.support.design.widget.TextInputLayout;
+import android.graphics.Color;
 import android.support.design.widget.TextInputEditText;
 import android.util.Patterns;
 import android.widget.RadioGroup;
@@ -154,7 +155,7 @@ public class Validation {
         String passwordinput = textInputPassword.getText().toString().trim();
 
         if (passwordinput.isEmpty()) {
-            textInputPassword.setError("Field can't be empty");
+            textInputPassword.setError("Password can't be empty");
             return false;
         } else if (!PASSWORD_PATTERN.matcher(passwordinput).matches()) {
             textInputPassword.setError("Password does not fit the specified criteria");
@@ -169,7 +170,7 @@ public class Validation {
         String cnfpassinput = textInputCnfPassword.getText().toString().trim();
 
         if (cnfpassinput.isEmpty()) {
-            textInputCnfPassword.setError("Field can't be empty");
+            textInputCnfPassword.setError("Confirm Password required");
             return false;
         }else if (!cnfpassinput.equals(passinput)){
             textInputCnfPassword.setError("Passwords does not match");
