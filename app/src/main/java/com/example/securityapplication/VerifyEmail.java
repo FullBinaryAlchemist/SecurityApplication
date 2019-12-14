@@ -49,7 +49,7 @@ public class VerifyEmail {
         }
     }
 
-    public void sendVerificationEmail(final Activity activity){
+    public void sendVerificationEmail(Activity activity){
         Log.d(TAG,"Inside sendEmailVerification");
         if (firebaseUser == null){
             Log.d(TAG,"User is null inside sendVerificationEmail");

@@ -104,7 +104,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                             }
                             else
                             {
-                                String error = task.getException().getMessage();
+                                String error = task.getException().getMessage().split("\\.")[0];
                                 Toast.makeText(ResetPasswordActivity.this,error,Toast.LENGTH_LONG).show();
                                 pgbarhide();
 

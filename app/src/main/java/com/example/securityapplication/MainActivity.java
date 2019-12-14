@@ -7,6 +7,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -36,6 +37,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthResult;
@@ -98,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //Permissions request code
     int RC;
 
+    private static Hashtable<String,String> userData;
     String background;
 
     public void pgbarshow()
@@ -166,18 +170,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if(mAuth.getCurrentUser()==null) {
                 Log.d(TAG,"Current user is null");
                 if(validateForm()){
+                    userData = new Hashtable<>();
 
                     pgbarshow();
 
 
 
 
-                    Hashtable<String,String> userData = new Hashtable<>();
                     userData.put("email",mEmail.getText().toString());
                     userData.put("password",mPassword.getText().toString());
                     userData.put("SignInType", "email");
                     // Check if registered user sign's in using old device or new device using imei number.
-                    setDeviceForSignIn(mImeiNumber, userData);
+                    setDeviceForSignIn(mImeiNumber);
                 }
                 else {
                     Log.d(TAG,"Invalid credentials");
@@ -203,6 +207,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             signupbttn.getBackground().setAlpha(100);
 
             // check if imei is registered
+            deviceId();
             setDeviceForSignUp(mImeiNumber);
         }
         //Added Reset Passowrd Activity
@@ -216,9 +221,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //Grant Device read Permissions
-        deviceId();
 
         //initialize Activity
         initViews();
@@ -244,6 +246,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mAuth=FirebaseAuth.getInstance();
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         initDataBaseReferences();
+
+        //Grant Device read Permissions
+        deviceId();
 
         /**  GOOGLE LOGIN  **/
 
@@ -279,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initializeGoogleFirebaseSignIn(){
         deviceId();
-        googleFirebaseSignIn.init(this, mAuth, mFirebaseDatabase, mImeiNumber);
+        googleFirebaseSignIn.init(this, FirebaseAuth.getInstance(), mFirebaseDatabase, mImeiNumber);
     }
 
     public void initViews(){
@@ -301,6 +306,60 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mEmailDatabaseReference = mFirebaseDatabase.getReference().child("Email");
     }
 
+    private void checkUserStatus(){
+        if (mAuth.getCurrentUser() == null){
+            mDevicesDatabaseReference.child(mImeiNumber).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull final DataSnapshot deviceDataSnapshot) {
+                    if (deviceDataSnapshot.exists()){
+                        device = deviceDataSnapshot.getValue(Device.class);
+                        if (!device.getUID().equals("null")){
+                            // for this, either same user will be already signed in(so this will be the case if data cleared from device)
+                            // or other user may have formatted the mobile without logging out
+                            // so user gets logged out without updating firebas database, so update firebase
+                            // make Devices->imei->"null" and Users->uid->imei->"null"
+                            // check internet connection
+                            uid = device.getUID();
+                            Log.d(TAG,"Formatted or uninstalled or cleared data behavior");
+                            deviceId();
+                            device = new Device();
+                            device.setUID("null");
+                            mDevicesDatabaseReference.child(mImeiNumber).setValue(device).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    mUsersDatabaseReference.child(uid).child("imei").setValue("null").addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Log.d(TAG,"Updated firebase");
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+
+                                        }
+                                    });
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+
+                                }
+                            });
+
+                            Log.d(TAG,"Current user:"+mAuth.getCurrentUser());
+                            updateUI(mAuth.getCurrentUser());
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
     private void deviceId() {
         telephonyManager = (TelephonyManager) getSystemService(this.TELEPHONY_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
@@ -315,6 +374,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             else {
                 mImeiNumber = telephonyManager.getDeviceId();
             }
+            // check if user formatted or uninstalled or cleared data from mobile
+            checkUserStatus();
         }
 
 
@@ -352,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     deviceId();
                 } else {
                     closeNow();
-                    Toast.makeText(this, "Without permission we check", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Permission denied", Toast.LENGTH_LONG).show();
                 }
                 break;
             default:
@@ -398,10 +459,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
 
-                Hashtable<String,String> userData = new Hashtable<String,String>();
+                userData = new Hashtable<String,String>();
                 userData.put("email",account.getEmail());
                 userData.put("SignInType","google");
-                setDeviceForSignIn(mImeiNumber, userData);
+                setDeviceForSignIn(mImeiNumber);
 
             } catch (ApiException e) {
                 // The ApiException status code indicates the detailed failure reason.
@@ -457,17 +518,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             boolean isNew = task.getResult().getAdditionalUserInfo().isNewUser();
                             Log.d(TAG, "onComplete: " + (isNew ? "new user" : "old user"));
 
-                            FirebaseUser user = mAuth.getCurrentUser();
+                            final FirebaseUser firebaseUser = mAuth.getCurrentUser();
                             Log.d(TAG, mDevicesDatabaseReference.toString());
 
-                            // set imei and uid in firebase
                             deviceId();
                             device = new Device();
-                            device.setUID(user.getUid());
-                            mDevicesDatabaseReference.child(mImeiNumber).setValue(device);
-                            mUsersDatabaseReference.child(user.getUid()).child("imei").setValue(mImeiNumber);
-                            //verifyEmailId();
-                            updateUI(user);
+                            device.setUID(firebaseUser.getUid());
+                            mDevicesDatabaseReference.child(mImeiNumber).setValue(device).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    mUsersDatabaseReference.child(firebaseUser.getUid()).child("imei").setValue(mImeiNumber).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            updateUI(firebaseUser);
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+
+                                        }
+                                    });
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+
+                                }
+                            });
+
                         } else {
 
                             pgbarhide();
@@ -534,7 +612,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             Intent mHomeIntent = new Intent(this,navigation.class);
             startActivity(mHomeIntent);
-            finish();
+            try {
+                closeNow();
+            }catch (Exception e){
+                Log.d(TAG,"Exception on closing activity:"+e.getMessage());
+                finish();
+            }
             pgbarhide();
 
 
@@ -542,20 +625,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG,"UI updated successfully");
     }
 
-    private void crossValidateUserData(Hashtable<String,String> userData){
+    private void crossValidateUserData(){
         String email=null, password = null;
         String SignInType = userData.get("SignInType");
 
-        switch (SignInType) {
-            case "email":
-                password = userData.get("password");
-            case "google":
-                email = userData.get("email");
-                break;
-            default:
-                Log.d(TAG, "Invalid SignInType");
-                return;
-        }
+        if (SignInType.equals("email"))
+            password = userData.get("password");
+        email = userData.get("email");
 
         if (user != null) {
             //Log.d("password:", user.getPassword());
@@ -576,8 +652,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 else if (SignInType.equals("google")){
                     // login the user through google
                     initializeGoogleFirebaseSignIn();
-                    googleFirebaseSignIn.firebaseAuthWithGoogle(GoogleSignIn.getLastSignedInAccount(MainActivity.this));
-                    //googleFirebaseSignIn.linkGoogleAccount(GoogleSignIn.getLastSignedInAccount(MainActivity.this));
+                    if (user.isGoogleAccountLinked())
+                        googleFirebaseSignIn.firebaseAuthWithGoogle(GoogleSignIn.getLastSignedInAccount(MainActivity.this));
+                    else
+                        googleFirebaseSignIn.firebaseAuthWithGoogle(GoogleSignIn.getLastSignedInAccount(MainActivity.this));
                 }
             }
         } else {
@@ -585,7 +663,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void setDeviceForSignIn(String imei, final Hashtable<String,String> userData){
+    private void setDeviceForSignIn(String imei){
         Log.d(TAG,"Inside setDeviceForSignIn method-Imei no.:"+imei);
         mDevicesDatabaseReference.child(imei).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -597,17 +675,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     device = null;
                 }
 
-                validateBeforeSignIn(userData);
+                validateBeforeSignIn();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.d(TAG,"Exception");
+                Log.d(TAG,databaseError.getDetails());
             }
         });
     }
 
     private void setDeviceForSignUp(String imei){
+        Log.d(TAG,"Inside setDeviceForSignUp");
         mDevicesDatabaseReference.child(imei).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot deviceDataSnapshot) {
@@ -622,12 +701,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Log.d(TAG,databaseError.getDetails());
             }
         });
     }
 
-    private void setUidFromFirebaseForSignIn(final Hashtable<String ,String> userData){
+    private void setUidFromFirebaseForSignIn(){
         String email = userData.get("email");
         // replace "." with "," in email id to store in firebase db as key
         String commaSeperatedEmail = TextUtils.join(",", Arrays.asList(email.split("\\.")));
@@ -644,7 +723,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     uid = "null";
                 }
-                isEmailRegistered(userData);
+                isEmailRegistered();
             }
 
             @Override
@@ -654,10 +733,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void isEmailRegistered(final Hashtable<String,String> userData){
+    private void isEmailRegistered(){
         Log.d(TAG,"Inside isEmailRegistered");
         if (uid.equals("null")){
-            Log.d(TAG,"Email not registered");
+            Log.d(TAG,"EmailId not registered");
             // prompt user to signUp
             if (userData.get("SignInType").equals("google")){
                 Intent signUpIntent = new Intent(this,SignUp1Activity.class);
@@ -685,7 +764,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (user.getImei().equals("null")){
                             // user is logged out
                             Log.d(TAG,"No user not logged  in. Login the user");
-                            crossValidateUserData(userData);
+                            crossValidateUserData();
                         }
                         else {
                             mDevicesDatabaseReference.child(user.getImei()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -700,7 +779,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             */
                                             Log.d(TAG, "User is logged out from old device..Now user can login from new device");
                                             device.setUID(uid);
-                                            crossValidateUserData(userData);
+                                            crossValidateUserData();
 
                                         } else {
                                             /* User not logged out from old device
@@ -759,8 +838,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void validateBeforeSignIn(Hashtable<String,String> userData) {
-
+    private void validateBeforeSignIn() {
+        Log.d(TAG,"Inside validateBeforeSignIn");
         // Check if registered user sign's in using old device or new device using imei number.
         if (device != null) {
             // first get uid from imei
@@ -769,18 +848,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d(TAG, uid);
                 //setUserForSignIn(uid, userData);
                 //to check if email is registered
-                setUidFromFirebaseForSignIn(userData);
+                setUidFromFirebaseForSignIn();
             } else {
                 // for this, either same user will be already signed in(so this will be the case if cache cleared)
                 // or other user may have formatted the mobile without logging out
-                Log.d(TAG,"Current user:"+mAuth.getCurrentUser());
-                updateUI(mAuth.getCurrentUser());
+                // implemented in checkUserStatus() function
                 pgbarhide();
+                Log.d(TAG,"Current user:"+mAuth.getCurrentUser());
             }
         } else {
             Log.d(TAG, "Imei not registered");
             //to check if email is registered
-            setUidFromFirebaseForSignIn(userData);
+            setUidFromFirebaseForSignIn();
         }
     }
 
@@ -799,8 +878,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivityForResult(signUpIntent,1);
             }
             else {
-                // user cannot register or
-                Toast.makeText(MainActivity.this,"User is already registered",Toast.LENGTH_LONG).show();
+                //
+                Toast.makeText(MainActivity.this,"Please wait or check your connection",Toast.LENGTH_LONG).show();
             }
         }
     }

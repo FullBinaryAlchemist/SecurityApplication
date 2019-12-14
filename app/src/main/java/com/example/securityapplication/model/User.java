@@ -14,7 +14,7 @@ public class User implements Parcelable {
     //private int id;
     private String name;
     private String email;
-    private String password;
+    //private String password;
     private String gender;
     private String mobile;
     //private String aadhar;
@@ -45,7 +45,7 @@ public class User implements Parcelable {
         //id = in.readInt();
         name = in.readString();
         email = in.readString();
-        password = in.readString();
+        //password = in.readString();
         gender = in.readString();
         mobile = in.readString();
 //        aadhar = in.readString();
@@ -130,13 +130,13 @@ public class User implements Parcelable {
         this.email = email;
     }
 
-    public String getPassword() {
+    /*public String getPassword() {
         return password;
     }
 
     public void setPassword(String password) {
         this.password = password;
-    }
+    }*/
 
     public String getGender() {
         return gender;
@@ -188,7 +188,7 @@ public class User implements Parcelable {
         //dest.writeInt(id);
         dest.writeString(name);
         dest.writeString(email);
-        dest.writeString(password);
+        //dest.writeString(password);
         dest.writeString(gender);
         dest.writeString(mobile);
 //        dest.writeString(aadhar);

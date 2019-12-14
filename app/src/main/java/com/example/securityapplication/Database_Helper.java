@@ -79,7 +79,7 @@ public class Database_Helper extends SQLiteOpenHelper {
             user.setGender(gender);
             user.setDob(dob);*/
             user.setEmail(Email);
-            user.setPassword(password);
+            //user.setPassword(password);
 
      /*       long result = db.insert(Table_Name, null, contentValues);
             if (result == -1) {

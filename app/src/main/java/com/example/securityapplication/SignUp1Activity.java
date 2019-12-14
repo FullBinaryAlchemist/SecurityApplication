@@ -8,7 +8,10 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.design.widget.SnackbarContentLayout;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.content.ContextCompat;
@@ -59,16 +62,18 @@ import static java.security.AccessController.getContext;
         * and the functions TextInputLayout.getEditText() have been replaced to just TextInputEditText.getText()
 */
 public class SignUp1Activity extends AppCompatActivity {
-//
 
-   Database_Helper myDb;
-    Validation val = new Validation();
     public static Button Btn_Submit;
+
+
+    Validation val = new Validation();
+
     //Added user object to send to next
     private User user;
 //spinner added
     public static ProgressBar spinner;
     private Button b1;
+
 
     DatePickerDialog datePickerDialog;
     public static TextInputEditText textinputName,textinputDOB,textinputEmail,textinputPass,textinputCnfPass; // was earlier TextInputLayout
@@ -76,12 +81,14 @@ public class SignUp1Activity extends AppCompatActivity {
     public static   TextInputLayout pass_outer,cnfpass_outer;
     public static TextView pass1,pass2;
 
+
     private FirebaseAuth mAuth;
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mEmailDatabaseReference;
     private String uid;
     private Button b2;
     public static Button verifyEmailButton;
+
     private VerifyEmail verifyEmail;
 
     private String TAG = "SignUp1";
@@ -92,12 +99,14 @@ public class SignUp1Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup1);
+
         spinner = (ProgressBar)findViewById(R.id.progress_bar);
         spinner.setVisibility(View.GONE);
 
        myDb = new Database_Helper(this);
        java.util.Calendar calendar=Calendar.getInstance();
       final int year=calendar.get(Calendar.YEAR);
+
 
       //removed most the view castings as they're unnecessary
         textinputEmail = findViewById(R.id.textlayout_Email);
@@ -118,8 +127,6 @@ public class SignUp1Activity extends AppCompatActivity {
         t2 =(TextInputEditText)findViewById(R.id.textlayout_Pass);
         t3 =(TextInputEditText)findViewById(R.id.textlayout_CnfPass);
 
-
-
         user=new User();
 
         // check if user is signed in to google or facebook
@@ -127,18 +134,13 @@ public class SignUp1Activity extends AppCompatActivity {
             GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(this);
             if (acct != null) {
                 String personName = acct.getDisplayName();
-                //String personGivenName = acct.getGivenName();
-                //String personFamilyName = acct.getFamilyName();
                 String personEmail = acct.getEmail();
-                //String personId = acct.getId();
-                //Uri personPhoto = acct.getPhotoUrl();
                 Log.d("Usernanme",personName);
                 Log.d("Email",personEmail);
                 if (personEmail != null) {
                     textinputEmail.setText(personEmail);
                     textinputEmail.setEnabled(false);
                 }
-
             }
         }
         else
@@ -160,13 +162,11 @@ public class SignUp1Activity extends AppCompatActivity {
         builder.setMessage(Message);
     }
 
-
-    public Hashtable<String, String> Validater(String userSelected) {
+    public Hashtable<String, String> Validater() {
         if (val.validateEmail(textinputEmail) & val.validatePassword(textinputPass,pass1) & val.validateCnfPassword(textinputPass,textinputCnfPass,pass2)){
             Hashtable<String,String> userData = new Hashtable<>();
             userData.put("email",textinputEmail.getText().toString().trim());
             userData.put("password", textinputPass.getText().toString().trim());
-            userData.put("userSelected", userSelected);
             return userData;
         }
         else {
@@ -174,6 +174,7 @@ public class SignUp1Activity extends AppCompatActivity {
             return null;
         }
     }
+
 
     public void verifyEmailId(View view)
     {
@@ -183,12 +184,6 @@ public class SignUp1Activity extends AppCompatActivity {
             // start spinnner
                     spinner.setVisibility(View.VISIBLE);
                     disable();
-/*            textinputEmail.setAlpha((float) 0.6);
-            t2.setAlpha((float) 0.6);
-            t3.setAlpha((float) 0.6);
-            verifyEmailButton.setAlpha((float) 0.6);
-            Btn_Submit.setAlpha((float) 0.6);*/
-
             createUserAndVerifyEmail(userData);
         }
     }
@@ -198,19 +193,12 @@ public class SignUp1Activity extends AppCompatActivity {
         // disable screen and show spinner
         //
 
+        Hashtable<String,String> userData = Validater();
+        if (userData != null){
 
-
-        Hashtable<String,String> userData = Validater("signUp");
-        if (userData != null)
-        {
+  
                     spinner.setVisibility(View.VISIBLE);
                     disable();
-/*            textinputEmail.setAlpha((float) 0.6);
-            textinputPass.setAlpha((float) 0.6);
-            textinputCnfPass.setAlpha((float) 0.6);
-            verifyEmailButton.setAlpha((float) 0.6);
-            Btn_Submit.setAlpha((float) 0.6);*/
-
             setUidFromFirebase(userData);
         }
     }
@@ -228,7 +216,7 @@ public class SignUp1Activity extends AppCompatActivity {
 
                             FirebaseUser firebaseUser = mAuth.getCurrentUser();
                             // check is email verified if clicked on signup and send verify email if clicked on verifyBtn
-                            checkIsEmailVerified(firebaseUser, userData.get("userSelected"));
+                            checkIsEmailVerified(firebaseUser,userData);
 
                         } else
                             {
@@ -251,6 +239,7 @@ public class SignUp1Activity extends AppCompatActivity {
                                 Btn_Submit.setAlpha(1);*/
 
                                 Log.d(TAG,e.getMessage());
+
                                 Toast.makeText(SignUp1Activity.this,"Invalid Password",Toast.LENGTH_SHORT).show();
 
                             } catch (Exception e)
@@ -258,15 +247,15 @@ public class SignUp1Activity extends AppCompatActivity {
                                 // stop spinner user interaction enabled
                                 spinner.setVisibility(View.GONE);
                                 Enable();
-/*                                textinputEmail.setAlpha(1);
-                                textinputPass.setAlpha(1);
-                                textinputCnfPass.setAlpha(1);
-                                verifyEmailButton.setAlpha(1);*/
+
+                                Toast.makeText(SignUp1Activity.this,
+                                        "Invalid Password, Use forgot password in case you forgot your password",Toast.LENGTH_LONG).show();
+                            } catch (Exception e){
                                 Log.e(TAG,e.getMessage());
                                 // If sign in fails, display a message to the user.
                                 Log.w(TAG, "createUserWithEmail:failure", task.getException());
                                 Toast.makeText(SignUp1Activity.this, "Authentication failed.Please check your connection and try again",
-                                        Toast.LENGTH_SHORT).show();
+                                        Toast.LENGTH_LONG).show();
                             }
                         }
                     }
@@ -285,7 +274,7 @@ public class SignUp1Activity extends AppCompatActivity {
                             Log.d(TAG, "onComplete: " + (isNew ? "new user" : "old user"));
 
                             FirebaseUser firebaseUser = mAuth.getCurrentUser();
-                            checkIsEmailVerified(firebaseUser, userData.get("userSelected"));
+                            checkIsEmailVerified(firebaseUser, userData);
                         } else {
                             try {
                                 throw task.getException();
@@ -298,7 +287,8 @@ public class SignUp1Activity extends AppCompatActivity {
                                 textinputCnfPass.setAlpha(1);
                                 verifyEmailButton.setAlpha(1);*/
                                 Log.d(TAG,e.getMessage());
-                                Toast.makeText(SignUp1Activity.this,"Invalid Password",Toast.LENGTH_SHORT).show();
+                                Toast.makeText(SignUp1Activity.this,
+                                        "Invalid Password, Use forgot password in case you forgot your password",Toast.LENGTH_LONG).show();
                             }catch (Exception e){
                                 // stop spinner
                                 spinner.setVisibility(View.GONE);
@@ -316,53 +306,19 @@ public class SignUp1Activity extends AppCompatActivity {
     }
 
 
-
-
-
-
-
-
-    private void checkIsEmailVerified(FirebaseUser firebaseUser, String userSelected)
-    {
+    private void checkIsEmailVerified(FirebaseUser firebaseUser, Hashtable<String,String> userData){
 
         verifyEmail = new VerifyEmail(firebaseUser, SignUp1Activity.this);
-        if (verifyEmail.isEmailIdVerified())
-        {
-
-            Toast.makeText(SignUp1Activity.this, "EmailId is verified", Toast.LENGTH_LONG).show();
-            //spinner stopped
-            spinner.setVisibility(View.GONE);
-            Enable();
-            /*
-            textinputEmail.setAlpha(1);
-            textinputPass.setAlpha(1);
-            textinputCnfPass.setAlpha(1);
-            verifyEmailButton.setAlpha(1);*/
+        if (verifyEmail.isEmailIdVerified()) {
+            Toast.makeText(SignUp1Activity.this, "Email is verified", Toast.LENGTH_LONG).show();
             String emailId = firebaseUser.getEmail();
             signOut();
-            // set uid from firebase
-            if (userSelected.equals("signUp"))
-            {
-                // can proceed to signUp2
-                AddData();
-            }
+            // can proceed to signUp2
+            AddData(userData);
         }
         else {
-            Log.d(TAG,userSelected);
-            if (userSelected.equals("verifyEmailId"))
-                verifyEmail.sendVerificationEmail(SignUp1Activity.this); //spinner added for email verification
-            else{
-                // stop spinner
-                signOut();
-                spinner.setVisibility(View.GONE);
-                Enable();
-               /* textinputEmail.setAlpha(1);
-                textinputPass.setAlpha(1);
-                textinputCnfPass.setAlpha(1);
-                verifyEmailButton.setAlpha(1);*/
+            verifyEmail.sendVerificationEmail(SignUp1Activity.this);
 
-            }
-            Toast.makeText(SignUp1Activity.this, "EmailId not verified",Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -374,59 +330,33 @@ public class SignUp1Activity extends AppCompatActivity {
         }
     }
 
-    private void AddData() {
-
-        //Sending the user object
-        myDb.setUser(user);
 
 
-       Boolean isInserted = myDb.insert_data(textinputEmail.getText().toString().trim(), textinputPass.getText().toString().trim());
 
 
+    private void AddData(Hashtable<String,String> userData) {
        // stop spinner
         spinner.setVisibility(View.GONE);
         Enable();
-/*        textinputEmail.setAlpha(1);
-        textinputPass.setAlpha(1);
-        textinputCnfPass.setAlpha(1);
-        verifyEmailButton.setAlpha(1);*/
-        if (isInserted)
-        {
 
-         /*   textinputName.setText(null);
-            gender_grp.clearCheck();
-            textinputDOB.setText(null);
-            textinputEmail.setText(null);
-            textinputPass.setText(null);
-            textinputCnfPass.setText(null);
-           // updates the Usr object with filled fields*/
-
-            user=myDb.getUser();
-
-            Log.d("User",user.getEmail().toString());
-         //starting signup activity
-            Intent intent=new Intent(SignUp1Activity.this,SignUp2.class);
-            intent.putExtra("User",user);
-            startActivityForResult(intent,1);
-        }
-        else {
-            String UserEmail = textinputEmail.getText().toString().trim();
-            boolean res = myDb.CheckUserEmail(UserEmail);
-            if (res){
-                Toast.makeText(this,"Email already taken",Toast.LENGTH_SHORT).show();
-            }
-            else{
-                //Toast.makeText(this,"User Entry Unsuccessful",Toast.LENGTH_SHORT).show();
-           }
-        }
+        user.setEmail(userData.get("email"));
+        //starting signup activity
+        Intent intent=new Intent(SignUp1Activity.this,SignUp2.class);
+        intent.putExtra("User",user);
+        intent.putExtra("password",userData.get("password"));
+        startActivityForResult(intent,1);
    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode==10 && requestCode==1)
-            finish();
-
+            try {
+                closeNow();
+            }catch (Exception e){
+                Log.d(TAG,"Exception on closing activity:"+e.getMessage());
+                finish();
+            }
 
         if (requestCode==2){
             Toast.makeText(SignUp1Activity.this, "Please fill the required details", Toast.LENGTH_SHORT).show();
@@ -435,10 +365,16 @@ public class SignUp1Activity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        Log.d(TAG,"Inside onbackpressed function");
         Intent returnIntent = new Intent();
         returnIntent.putExtra("hasBackPressed",true);
         setResult(Activity.RESULT_OK,returnIntent);
-        finish();
+        try {
+            closeNow();
+        }catch (Exception e){
+            Log.d(TAG,"Exception on closing activity:"+e.getMessage());
+            finish();
+        }
     }
 
     private void setUidFromFirebase(final Hashtable<String,String> userData){
@@ -477,9 +413,9 @@ public class SignUp1Activity extends AppCompatActivity {
             Log.d(TAG,"Email not stored in email node in firebase db");
         }
         else{
-            Toast.makeText(SignUp1Activity.this, "Email Id is already registered",Toast.LENGTH_LONG).show();
             spinner.setVisibility(View.GONE);
             Enable();
+            Toast.makeText(SignUp1Activity.this, "Email is already registered",Toast.LENGTH_LONG).show();
         }
 
     }
@@ -497,6 +433,7 @@ public class SignUp1Activity extends AppCompatActivity {
            t1.setVisibility(View.GONE);
        }
    }
+
 
    //screen enable disable
 
@@ -520,6 +457,15 @@ public class SignUp1Activity extends AppCompatActivity {
         verifyEmailButton.setAlpha((float) 0.6);
         Btn_Submit.setAlpha((float) 0.6);
         Btn_Submit.setText("");
+
+    }
+    private void closeNow(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
+            finishAffinity();
+        }
+        else{
+            finish();
+        }
 
     }
 }
