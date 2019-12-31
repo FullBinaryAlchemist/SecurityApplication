@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,21 +14,30 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.DrawableWrapper;
 import android.net.Uri;
 import android.os.Build;
 
 import android.os.Bundle;
+import android.os.Environment;
+
+import android.os.StrictMode;
+
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -41,10 +51,12 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ceylonlabs.imageviewpopup.ImagePopup;
 import com.example.securityapplication.Helper.FirebaseHelper;
 import com.example.securityapplication.Helper.InternalStorage;
 import com.example.securityapplication.model.User;
@@ -66,11 +78,45 @@ import com.theartofdev.edmodo.cropper.CropImageView;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import de.hdodenhof.circleimageview.CircleImageView;
 import es.dmoral.toasty.Toasty;
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Parcelable;
+import android.provider.MediaStore;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.ImageView;
+
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+
+import static android.Manifest.permission.CAMERA;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.example.securityapplication.R.layout.spinner_layout;
 import static com.google.firebase.storage.StorageException.ERROR_OBJECT_NOT_FOUND;
 
@@ -89,22 +135,32 @@ public class profile_fragment extends Fragment {
     private String TAG = "ProfileActivity";
     Spinner spinner;
     DatePickerDialog datePickerDialog;
-    private  Uri file;
     private FirebaseHelper firebaseHelper;
 
-    private ImageView profile_pic;
+    private CircleImageView profile_pic;
     private ImageButton chooseImgBtn;
+    File f;
+
     private Uri filePath, camerafilepath;
-    private  Bitmap bitmappic;
+    private  Bitmap bitmappic,bit_image;
+    Uri imguri;
 
     private  Intent CropIntent;
     private final int PICK_IMAGE_REQUEST = 71;
     private final int TAKE_PICTURE = 81;
     private  ProgressDialog progressDialog;
-
     // InternalStorage
     private InternalStorage internalStorage;
+    StrictMode.VmPolicy.Builder builder;
 
+    Uri picUri;
+
+    private ArrayList<String> permissionsToRequest;
+    private ArrayList<String> permissionsRejected = new ArrayList<>();
+    private ArrayList<String> permissions = new ArrayList<>();
+
+    private final static int ALL_PERMISSIONS_RESULT = 107;
+    private final static int IMAGE_RESULT = 200;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -132,12 +188,23 @@ public class profile_fragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        //builder = new StrictMode.VmPolicy.Builder();
+        //StrictMode.setVmPolicy(builder.build());
+        LinearLayout linearLayout = getActivity().findViewById(R.id.anim_back);
+        AnimationDrawable animationDrawable = (AnimationDrawable) linearLayout.getBackground();
+        animationDrawable.setEnterFadeDuration(2000);
+        animationDrawable.setExitFadeDuration(4000);
+        animationDrawable.start();
         initObjects();
         initviews();
 //        FetchAllData();
         DisplayData();
         initListeners();
         deviceId();
+
+
+
+
     }
 
     private void initObjects() {
@@ -157,6 +224,59 @@ public class profile_fragment extends Fragment {
     }
 
     private void initListeners() {
+
+
+        profile_pic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                    /*Dialog builder = new Dialog(this);
+                    builder.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                    builder.getWindow().setBackgroundDrawable(
+                            new ColorDrawable(android.graphics.Color.TRANSPARENT));
+                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            //nothing;
+                        }
+                    });
+
+                    ImageView imageView = new ImageView(this);
+                    imageView.setImageURI(imageUri);
+                    builder.addContentView(imageView, new RelativeLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT));
+                    builder.show();*/
+                final ImagePopup imagePopup = new ImagePopup(getContext());
+                imagePopup.setWindowHeight(800); // Optional
+                imagePopup.setWindowWidth(800); // Optional
+                imagePopup.setBackgroundColor(Color.BLACK);  // Optional
+                imagePopup.setFullScreen(true); // Optional
+                imagePopup.setHideCloseIcon(true);  // Optional
+                imagePopup.setImageOnClickClose(true);  // Optional
+                imagePopup.setFadingEdgeLength(1000);
+                imagePopup.setClickable(true);
+                imagePopup.setKeepScreenOn(true);
+                imagePopup.setPressed(true);
+                imagePopup.setTop(100);
+                imagePopup.setBottom(100);
+                imagePopup.setEnabled(true);
+
+
+
+
+
+                imagePopup.initiatePopup(profile_pic.getDrawable()); // Load Image from Drawable
+                imagePopup.viewPopup();
+
+
+            }
+        });
+
+
+
+
         textDob.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -189,8 +309,6 @@ public class profile_fragment extends Fragment {
 
                                             if (IsInternet.isNetworkAvaliable(getContext())) {
 
-                                                chooseImgBtn.setVisibility(View.VISIBLE);
-
                                                 if(btn_edit.getText().equals("edit"))
                                                 {btn_edit.setText("Save");
                                                     enable();
@@ -205,7 +323,7 @@ public class profile_fragment extends Fragment {
                                                     }
                                                     else {
                                                         // start progress bar
-                                                        progressDialog = new ProgressDialog(getContext());
+                                                        progressDialog = new ProgressDialog(getContext(),R.style.MyAlertDialogStyle);
                                                         progressDialog.setTitle("Saving data...");
                                                         progressDialog.show();
                                                         progressDialog.setMessage("validating....");
@@ -262,12 +380,80 @@ public class profile_fragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                pictureChoice();
-                // choose img from gallery
-                chooseImg("storage");
+                startActivityForResult(getPickImageChooserIntent(), IMAGE_RESULT);
             }
         });
+        permissions.add(CAMERA);
+        permissions.add(WRITE_EXTERNAL_STORAGE);
+        permissions.add(READ_EXTERNAL_STORAGE);
+        permissionsToRequest = findUnAskedPermissions(permissions);
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+
+            if (permissionsToRequest.size() > 0)
+                requestPermissions(permissionsToRequest.toArray(new String[permissionsToRequest.size()]), ALL_PERMISSIONS_RESULT);
+        }
     }
+
+
+
+
+    public Intent getPickImageChooserIntent() {
+
+        Uri outputFileUri = getCaptureImageOutputUri();
+
+        List<Intent> allIntents = new ArrayList<>();
+        PackageManager packageManager = getActivity().getPackageManager();
+
+        Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        List<ResolveInfo> listCam = packageManager.queryIntentActivities(captureIntent, 0);
+        for (ResolveInfo res : listCam) {
+            Intent intent = new Intent(captureIntent);
+            intent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+            intent.setPackage(res.activityInfo.packageName);
+            if (outputFileUri != null) {
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
+            }
+            allIntents.add(intent);
+        }
+
+        Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        galleryIntent.setType("image/*");
+        List<ResolveInfo> listGallery = packageManager.queryIntentActivities(galleryIntent, 0);
+        for (ResolveInfo res : listGallery) {
+            Intent intent = new Intent(galleryIntent);
+            intent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+            intent.setPackage(res.activityInfo.packageName);
+            allIntents.add(intent);
+        }
+
+        Intent mainIntent = allIntents.get(allIntents.size() - 1);
+        for (Intent intent : allIntents) {
+            if (intent.getComponent().getClassName().equals("com.android.documentsui.DocumentsActivity")) {
+                mainIntent = intent;
+                break;
+            }
+        }
+        allIntents.remove(mainIntent);
+
+        Intent chooserIntent = Intent.createChooser(mainIntent, "Select source");
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, allIntents.toArray(new Parcelable[allIntents.size()]));
+
+        return chooserIntent;
+    }
+
+
+    private Uri getCaptureImageOutputUri() {
+        Uri outputFileUri = null;
+        File getImage = getActivity().getExternalFilesDir("");
+        if (getImage != null) {
+            outputFileUri = Uri.fromFile(new File(getImage.getPath(), "profile.png"));
+        }
+        return outputFileUri;
+    }
+
 
     private boolean validate() {
         if(textName.getText().toString().trim().length()>1 && textAddress.getText().toString().length()>1 && textPhone.getText().toString().length()==10) {
@@ -320,11 +506,16 @@ public class profile_fragment extends Fragment {
         textPhone.setText(user.getMobile());
 
         // display image from internal storage
-        File imgPath = internalStorage.getImagePathFromStorage(user.getEmail());
+        //File imgPath = internalStorage.getImagePathFromStorage(user.getEmail());
+        f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), "Trata/"+user.getEmail()+"/");
+        File imgPath = new File(f.getAbsolutePath(), "profile.jpeg");
+       // File imgPath = new File(f.getAbsolutePath(), "profile.jpeg");
         try{
             Bitmap b = BitmapFactory.decodeStream(new FileInputStream(imgPath));
             profile_pic = getActivity().findViewById(R.id.profile_pic);
+            //ImageButton imageButton = (ImageButton) profile_pic;
             profile_pic.setImageBitmap(b);
+
         }catch (IOException e){
             //Toast.makeText(getContext(), "Profile picture not found", Toast.LENGTH_SHORT).show();
             Log.d(TAG,"Profile picture not found");
@@ -332,14 +523,29 @@ public class profile_fragment extends Fragment {
 
         Log.d("Profile","DATA displayed on profile Successfully");
     }
+    public Bitmap getResizedBitmap(Bitmap image, int maxSize) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        float bitmapRatio = (float) width / (float) height;
+        if (bitmapRatio > 1) {
+            width = maxSize;
+            height = (int) (width / bitmapRatio);
+        } else {
+            height = maxSize;
+            width = (int) (height * bitmapRatio);
+        }
+
+        return Bitmap.createScaledBitmap(image, width, height, true);
+    }
     private void disable(){
         textName.setEnabled(false);
         spinner.setEnabled(false);
         textEmail.setEnabled(false);
         textPhone.setEnabled(false);
         textAddress.setEnabled(false);
+        chooseImgBtn.setVisibility(View.INVISIBLE);
         textDob.setEnabled(false);
-        chooseImgBtn.setVisibility(View.GONE);
         textName.setBackgroundColor(Color.TRANSPARENT);
         textEmail.setBackgroundColor(Color.TRANSPARENT);
         textPhone.setBackgroundColor(Color.TRANSPARENT);
@@ -362,7 +568,7 @@ public class profile_fragment extends Fragment {
         textAddress.setEnabled(true);
         textDob.setEnabled(true);
 
-
+        chooseImgBtn.setVisibility(View.VISIBLE);
         textEmail.setBackgroundResource(R.drawable.blackborder);
         textPhone.setBackgroundResource(R.drawable.blackborder);
         textAddress.setBackgroundResource(R.drawable.blackborder);
@@ -390,118 +596,145 @@ public class profile_fragment extends Fragment {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG,"resultcode:"+resultCode+"requestcode:"+requestCode);
-        if (requestCode == 1){
-            if (resultCode == 110){
-                user = Objects.requireNonNull(data).getParcelableExtra("ResultUser");
-                Log.d("Profile","User object returned"+user.getEmail());
-                mydb.updateUser(user);
-                DisplayData();
-            }
-        }
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if(requestCode == PICK_IMAGE_REQUEST && resultCode == getActivity().RESULT_OK
-                && data != null && data.getData() != null ) {
-            filePath = data.getData();
 
-            if (filePath == null) {
-                Toast.makeText(getContext(), "File not found", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            cropimage();
-        }
+        if (resultCode == Activity.RESULT_OK) {
 
 
 
+            if (requestCode == IMAGE_RESULT) {
+
+                String filePath = getImageFilePath(data);
+                if (filePath != null) {
+                    Bitmap d = BitmapFactory.decodeFile(filePath);
+//                    int m=d.getWidth();
+//                    int k=d.getWidth();
+//                    int l=d.getHeight();
+//                    if(k<l)
+//                        m=k;
+//                    else
+//                        m=l;
+//
+//                    d=Bitmap.createBitmap(d,0,0,d.getWidth(),m);
+                    Bitmap output;
+                    try {
+                        if (d.getWidth() >= d.getHeight())
+                            output = Bitmap.createBitmap(d, d.getWidth() / 2 - d.getHeight() / 2, 0, d.getHeight(), d.getHeight());
+                        else
+                            output = Bitmap.createBitmap(d, 0, d.getHeight() / 2 - d.getWidth() / 2, d.getWidth(), d.getWidth());
+                        //Bitmap output=getResizedBitmap(d,100);
+                        Bitmap bit2 = ExifUtils.rotateBitmap(filePath, output);
+                        int nh = (int) (output.getHeight() * (512.0 / output.getWidth()));
+                        bit2 = Bitmap.createScaledBitmap(bit2, 512, nh, true);
+                        profile_pic.setImageBitmap(bit2);
+                    }catch (Exception e){
+                        Toast.makeText(getContext(), "Please  upload image of less size", Toast.LENGTH_SHORT).show();
+                    }
+                    //save to internal storage code come here
 
 
-           /* Bitmap bitmap = MediaStore.Images.Media.getBitmap(Objects.requireNonNull(getActivity()).getContentResolver(), result.getBitmap());
 
-
-            try {
-                //CropImage.ActivityResult result = CropImage.getActivityResult(data);
-
-                internalStorage.saveImageToInternalStorage(result.getBitmap(), user.getEmail());
-                profile_pic.setImageBitmap(result.getBitmap());
-                deleteExistingProfilePic();
-            }catch (Exception e){
-                e.printStackTrace();
-                Toast.makeText(getContext(), "Unable to store image",Toast.LENGTH_SHORT).show();
-            }*/
-
-
-        if(requestCode == 201 && resultCode == getActivity().RESULT_OK) {
-            checkCameraPermission();
-
-
-            filePath = null;
-            Bitmap cameraphoto = (Bitmap) data.getExtras().get("data");
-
-            filePath = getImageUri(getContext(),cameraphoto);
-
-
-/*
-            Log.d("tag", String.valueOf(filePath));
-
-            filePath = (Uri) data.getData();
-
-            Log.d("tag", String.valueOf(filePath));
-
-
-            //bitmappic = (Bitmap) data.getExtras().get("data");
-
-            if (filePath == null) {
-                Toast.makeText(getContext(), "File not found", Toast.LENGTH_SHORT).show();
-                return;
-            }*/
-
-
-            cropimage();
-        }
-
-
-           /* Log.d("tag", String.valueOf(bitmappic));
-
-            try {
-                internalStorage.saveImageToInternalStorage(bitmappic, user.getEmail());
-                profile_pic.setImageBitmap(bitmappic);
-                deleteExistingProfilePic();
-            }catch (Exception e){
-                e.printStackTrace();
-                Toast.makeText(getContext(), "Unable to store image",Toast.LENGTH_SHORT).show();
-            }*/
-
-           
-        if(requestCode == 0 && resultCode == getActivity().RESULT_OK)
-        {
-            try {
-                if (data != null) {
-                    // get the returned data
-                    Bundle extras = data.getExtras();
-                    // get the cropped bitmap
-                    Bitmap bitmappic = extras.getParcelable("data");
-                    //CropImage.ActivityResult result = CropImage.getActivityResult(data);
-
-                    internalStorage.saveImageToInternalStorage(bitmappic, user.getEmail());
-
-                    profile_pic.setImageBitmap(bitmappic);
-                    deleteExistingProfilePic();
+                    uploadProfilePicToFirebase();
                 }
-            }catch (Exception e){
-                e.printStackTrace();
-                Toast.makeText(getContext(), "Unable to store image",Toast.LENGTH_SHORT).show();
             }
+
         }
+
+    }
+    private String getImageFromFilePath(Intent data) {
+        boolean isCamera = data == null || data.getData() == null;
+
+        if (isCamera) return getCaptureImageOutputUri().getPath();
+        else return getPathFromURI(data.getData());
+
     }
 
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 40, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-        return Uri.parse(path);
+    public String getImageFilePath(Intent data) {
+        return getImageFromFilePath(data);
     }
+
+    private String getPathFromURI(Uri contentUri) {
+        String[] proj = {MediaStore.Audio.Media.DATA};
+        Cursor cursor = getActivity().getContentResolver().query(contentUri, proj, null, null, null);
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
+        cursor.moveToFirst();
+        return cursor.getString(column_index);
+    }
+
+    private ArrayList<String> findUnAskedPermissions(ArrayList<String> wanted) {
+        ArrayList<String> result = new ArrayList<String>();
+
+        for (String perm : wanted) {
+            if (!hasPermission(perm)) {
+                result.add(perm);
+            }
+        }
+        return result;
+    }
+
+    private boolean hasPermission(String permission) {
+        if (canMakeSmores()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                return (getActivity().checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED);
+            }
+        }
+        return true;
+    }
+
+    private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
+        new AlertDialog.Builder(getContext())
+                .setMessage(message)
+                .setPositiveButton("OK", okListener)
+                .setNegativeButton("Cancel", null)
+                .create()
+                .show();
+    }
+
+    private boolean canMakeSmores() {
+        return (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1);
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        switch (requestCode) {
+
+            case ALL_PERMISSIONS_RESULT:
+                for (String perms : permissionsToRequest) {
+                    if (!hasPermission(perms)) {
+                        permissionsRejected.add(perms);
+                    }
+                }
+
+                if (permissionsRejected.size() > 0) {
+
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (shouldShowRequestPermissionRationale(permissionsRejected.get(0))) {
+                            showMessageOKCancel("These permissions are mandatory for the application. Please allow access.",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+
+                                                requestPermissions(permissionsRejected.toArray(new String[permissionsRejected.size()]), ALL_PERMISSIONS_RESULT);
+                                            }
+                                        }
+                                    });
+                            return;
+                        }
+                    }
+
+                }
+
+                break;
+        }
+
+    }
+
 
 
     private void deviceId() {
@@ -550,54 +783,7 @@ public class profile_fragment extends Fragment {
 
     }
 
-    public  boolean checkReadExterPermission(){
-        if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
-            Toast.makeText(getContext(), "Permission Required for sending SMS in case of SOS", Toast.LENGTH_LONG).show();
-            Log.d("MainActivity", "PERMISSION FOR SEND SMS NOT GRANTED, REQUESTING PERMSISSION...");
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, RC);
-        }
 
-        return ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED;
-
-    }
-
-
-    public  boolean checkWriteExterPermission(){
-        if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
-            Toast.makeText(getContext(), "Permission Required for sending SMS in case of SOS", Toast.LENGTH_LONG).show();
-            Log.d("MainActivity", "PERMISSION FOR SEND SMS NOT GRANTED, REQUESTING PERMSISSION...");
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, RC);
-        }
-
-        return ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED;
-
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case 101:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    deviceId();
-                } else {
-                    getActivity().finish();
-                    Toast.makeText(getContext(), "Without permission we check", Toast.LENGTH_LONG).show();
-                }
-                break;
-
-            case 0:
-                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                            && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-
-                        chooseImgBtn.setEnabled(true);
-                    }
-
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
 
     private void signOut(){
         Log.d(TAG,"Inside signout");
@@ -692,50 +878,9 @@ public class profile_fragment extends Fragment {
         }
     }
 
-    private void pictureChoice(){
-        final AlertDialog.Builder a_builder = new AlertDialog.Builder(getContext());
-        a_builder.setTitle("Profile Photo")
-                .setIcon(R.drawable.ic_camera_icon)
-                .setPositiveButton("Camera", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        chooseImg("camera");
-
-                    }
-                })
-                .setNeutralButton("Gallery", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        chooseImg("gallery");
-                    }
-                });
-        AlertDialog alert = a_builder.create();
-        alert.show();
-    }
-
-    private void chooseImg(String choice){
-        switch (choice) {
-            case "gallery":
-                Intent pickImageIntent = new Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-
-                pickImageIntent.setType("image/*");
-
-                //CropImage.startPickImageActivity(MainActivity.this);
-
-                startActivityForResult(Intent.createChooser(pickImageIntent, "Select Picture"), PICK_IMAGE_REQUEST);
-                break;
-
-            case "camera":
-                checkCameraPermission();
-
-                Intent cameraintent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(cameraintent,201);
-        }
-    }
-
     private void uploadProfilePicToFirebase(){
 
-        final ProgressDialog progressDialog = new ProgressDialog(getContext());
+        final ProgressDialog progressDialog = new ProgressDialog(getContext(),R.style.MyAlertDialogStyle);
         progressDialog.setTitle("Uploading...");
         progressDialog.show();
         progressDialog.setCancelable(false);
@@ -776,7 +921,7 @@ public class profile_fragment extends Fragment {
     }
 
     private void deleteExistingProfilePic(){
-        final ProgressDialog progressDialog = new ProgressDialog(getContext());
+        final ProgressDialog progressDialog = new ProgressDialog(getContext(),R.style.MyAlertDialogStyle);
         progressDialog.setTitle("Processing...");
         progressDialog.show();
         progressDialog.setCancelable(false);
@@ -809,26 +954,5 @@ public class profile_fragment extends Fragment {
         });
     }
 
-    public void cropimage()
-    {
-        try {
-            CropIntent = new Intent("com.android.camera.action.CROP");
-            CropIntent.setDataAndType(filePath, "image/*");
-            CropIntent.putExtra("crop", "true");
-            CropIntent.putExtra("outputX", 180);
-            CropIntent.putExtra("outputY", 180);
-            CropIntent.putExtra("aspectX", 3);
-            CropIntent.putExtra("aspectY", 3);
-            CropIntent.putExtra("scaleUpIfNeeded", true);
-            CropIntent.putExtra("return-data", true);
-            CropIntent.putExtra(MediaStore.EXTRA_OUTPUT, filePath);
-            startActivityForResult(CropIntent, 0);
-        }catch (ActivityNotFoundException anfe) {
-            // display an error message
-            String errorMessage = "Whoops - your device doesn't support the crop action!";
-            try {
-                Toasty.normal(getContext(), errorMessage, Toast.LENGTH_SHORT).show(); //changed to a normal toasty
-            }catch (Exception e){Log.d(TAG,e.getMessage());}
-        }
-    }
+
 }

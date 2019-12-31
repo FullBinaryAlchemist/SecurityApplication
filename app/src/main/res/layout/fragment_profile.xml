@@ -31,7 +31,8 @@
                     android:layout_alignParentTop="true"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
-                    android:background="@drawable/gradientbackground"
+                    android:id="@+id/anim_back"
+                    android:background="@drawable/gra_list"
                     android:orientation="vertical"
                     >
 
@@ -45,6 +46,8 @@
                             android:id="@+id/profile_pic"
                             android:layout_width="120dp"
                             android:layout_height="120dp"
+                            android:clickable="true"
+                            android:focusable="true"
                             android:src="@drawable/ic_account_circle_cyan_24dp"
                             android:layout_marginTop="15dp"
                             app:civ_border_width="0dp"
@@ -70,36 +73,37 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:alpha="0.6"
+                        android:capitalize="words"
                         android:gravity="center"
                         android:hint="Name"
-                        android:paddingStart="20dp"
-                        android:paddingLeft="20dp"
-                        android:paddingRight="0dp"
                         android:singleLine="true"
                         android:textColor="@color/white"
-
-                        android:textCursorDrawable="@drawable/cursor_color"
-
-
                         android:textColorLink="#00EEEEEE"
-                        android:textSize="30sp"
+                        android:textCursorDrawable="@drawable/cursor_color"
+                        android:textSize="25sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
 
-
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginLeft="8dp"
+    >
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
                     android:orientation="horizontal"
-                    android:paddingStart="25dp"
-                    android:paddingLeft="25dp">
+                    >
 
                     <ImageView
                         android:layout_width="36dp"
                         android:layout_height="36dp"
-                        android:src="@drawable/ic_email_black_24dp" />
+                        android:src="@drawable/ic_email_black_24dp"
+                        android:layout_marginEnd="10dp"
+                        />
 
                     <EditText
                         android:id="@+id/text_Email"
@@ -108,17 +112,16 @@
                         android:layout_gravity="center_vertical"
                         android:alpha="0.6"
                         android:background="@android:color/transparent"
+                        android:capitalize="words"
                         android:hint="Email"
-                        android:inputType="textCapSentences|textMultiLine"
-                        android:paddingStart="20dp"
-                        android:paddingLeft="20dp"
+                        android:inputType="textCapSentences"
+                        android:paddingStart="3dp"
                         android:paddingRight="0dp"
-
                         android:textColor="@color/cyan"
+                        android:textColorHighlight="#007399"
                         android:textColorLink="#00FFFFFF"
                         android:textCursorDrawable="@drawable/cursor_color"
                         android:textSize="20sp"
-                        android:textColorHighlight="#007399"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -127,12 +130,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="25dp"
                     android:orientation="horizontal"
-                    android:paddingStart="25dp"
-                    android:paddingLeft="25dp">
+                    >
 
                     <ImageView
                         android:layout_width="36dp"
                         android:layout_height="36dp"
+                        android:layout_marginEnd="10dp"
                         android:src="@drawable/ic_local_phone_black_24dp" />
 
                     <EditText
@@ -141,21 +144,21 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:alpha="0.6"
+                        android:background="@drawable/shapeemail"
                         android:hint="Phone Number"
                         android:inputType="number"
                         android:maxLength="10"
-                        android:paddingStart="20dp"
-                        android:paddingLeft="20dp"
+                        android:paddingStart="3dp"
                         android:paddingRight="0dp"
                         android:singleLine="true"
                         android:textColor="@color/cyan"
+                        android:textColorHighlight="#007399"
                         android:textColorLink="#00FFFFFF"
                         android:textCursorDrawable="@drawable/cursor_color"
                         android:textSize="20sp"
-                        android:textColorHighlight="#007399"
-                        android:background="@drawable/shapeemail"
 
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        tools:ignore="TextFields" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -163,12 +166,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="25dp"
                     android:orientation="horizontal"
-                    android:paddingStart="25dp"
-                    android:paddingLeft="25dp">
+                    >
 
                     <ImageView
                         android:layout_width="36dp"
                         android:layout_height="36dp"
+                        android:layout_marginEnd="10dp"
                         android:src="@drawable/ic_home_cyan_24dp" />
 
                     <AutoCompleteTextView
@@ -177,18 +180,17 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:alpha="0.6"
+                        android:background="@drawable/shapeemail"
                         android:hint="Locality"
-                        android:inputType="textCapSentences"
-                        android:paddingStart="20dp"
-                        android:paddingLeft="20dp"
+                        android:inputType="textCapWords"
+                        android:paddingStart="3dp"
                         android:paddingRight="0dp"
                         android:singleLine="true"
                         android:textColor="@color/cyan"
+                        android:textColorHighlight="#007399"
                         android:textColorLink="#00FFFFFF"
                         android:textCursorDrawable="@drawable/cursor_color"
-                        android:textSize="20sp"
-                        android:textColorHighlight="#007399"
-                        android:background="@drawable/shapeemail"
+                        android:textSize="18sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -197,12 +199,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="25dp"
                     android:orientation="horizontal"
-                    android:paddingStart="25dp"
-                    android:paddingLeft="25dp">
+                   >
 
                     <ImageView
                         android:layout_width="36dp"
                         android:layout_height="36dp"
+                        android:layout_marginEnd="10dp"
                         android:src="@drawable/ic_wc_black_24dp" />
 
                     <Spinner
@@ -211,14 +213,13 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:alpha="0.6"
-                        android:paddingStart="15dp"
+                        android:background="@drawable/shapeemail"
+                        android:paddingStart="3dp"
                         android:spinnerMode="dropdown"
                         android:textColor="@color/cyan"
                         android:textColorHighlight="#007399"
-                        android:background="@drawable/shapeemail"
-
                         android:textSize="20sp"
-                        android:textStyle="bold" />
+                        android:textStyle="normal" />
 
                     <!--                    <EditText-->
                     <!--                        android:id="@+id/text_Gender"-->
@@ -239,12 +240,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="25dp"
                     android:orientation="horizontal"
-                    android:paddingStart="25dp"
-                    android:paddingLeft="25dp">
+                    >
 
                     <ImageView
                         android:layout_width="36dp"
                         android:layout_height="36dp"
+                        android:layout_marginEnd="10dp"
                         android:src="@drawable/ic_date_range_black_24dp" />
 
                     <EditText
@@ -253,21 +254,20 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:alpha="0.6"
+                        android:background="@drawable/shapeemail"
                         android:focusable="false"
                         android:hint="Date of Birth"
                         android:inputType="textCapSentences|textMultiLine"
-                        android:paddingStart="20dp"
-                        android:paddingLeft="20dp"
+                        android:paddingStart="3dp"
                         android:paddingRight="0dp"
                         android:singleLine="true"
-                        android:background="@drawable/shapeemail"
-
-                        android:textColorHighlight="#007399"
 
                         android:textColor="@color/cyan"
+
+                        android:textColorHighlight="#007399"
                         android:textColorLink="#00FFFFFF"
                         android:textCursorDrawable="@drawable/cursor_color"
-                        android:textSize="20sp"
+                        android:textSize="18sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -290,7 +290,7 @@
                         android:drawablePadding="5dp"
                         android:text="edit"
                         android:textColor="#fff"
-                        android:textSize="22sp" />
+                        android:textSize="20sp" />
 
                     <Button
                         android:id="@+id/btn_Logout"
@@ -303,7 +303,7 @@
                         android:drawablePadding="5dp"
                         android:text="logout"
                         android:textColor="#fff"
-                        android:textSize="22sp" />
+                        android:textSize="20sp" />
 
                 </LinearLayout>
 
@@ -313,14 +313,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="30dp"
                     android:text="@string/change_password"
-                    android:textSize="16sp"
+                    android:textSize="18sp"
 
                     android:textColor="@color/cyan"
                     android:gravity="center"
                     android:clickable="true"
                     android:focusable="true"/>
             </LinearLayout>
-
+            </LinearLayout>
         </ScrollView>
     </LinearLayout>
 </LinearLayout>

@@ -24,5 +24,8 @@
     <color name="bluedecent">#71D6FF</color>
     <color name="shadow">#292929</color>
 
+    <color name="startcolor">#00BCD4</color>
+    <color name="endcolor">#1636E2</color>
+
 
 </resources>

@@ -17,8 +17,8 @@ import es.dmoral.toasty.Toasty;
 
 public class setting_fragment extends Fragment {
     Button sos;
-    Button rate_us,scream,invite,privacy,community; //added community
-    String str="Check out TRATA, I use it to protect myself and the people I care about. Get it for free at \nhttps://play.google.com/store/apps/details?id=com.android.chrome";
+    Button rate_us,scream,invite,privacy,community,feedback; //added community
+    String str="Check out TRATA, I use it to protect myself and the people I care about. Get it for free at \nhttp://innovatiivecreators.in/download/";
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -32,6 +32,16 @@ public class setting_fragment extends Fragment {
         invite=getActivity().findViewById(R.id.invite);
         privacy=getActivity().findViewById(R.id.privacy);
         community=getActivity().findViewById(R.id.community);
+        feedback=getActivity().findViewById(R.id.feedback);
+        feedback.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                Uri data = Uri.parse("mailto:sachin.saw.13@gmail.com?subject=" + "Feedback" + "&body=" + "");
+                intent.setData(data);
+                startActivity(intent);
+            }
+        });
         privacy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

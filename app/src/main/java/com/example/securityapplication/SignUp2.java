@@ -595,7 +595,9 @@ public class SignUp2 extends AppCompatActivity {
         //Log.d("SignUp2 ","Returned Completed User Object"+user.getMobile()+user.getLocation());
         setResult(10,ReturnIntent);//to finish sing up 1 activity
         activity.finish();
+        //Clear the back stack and re-directing to the sospage
         Intent sosPage = new Intent(SignUp2.this, sos_page.class);
+        sosPage.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         sosPage.putExtra("btn","1");
         startActivity(sosPage);
     }

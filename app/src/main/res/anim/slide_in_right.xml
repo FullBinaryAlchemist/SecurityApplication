@@ -19,7 +19,7 @@
         android:toXScale="1"
         android:fromYScale="0"
         android:toYScale="1.0"
-        android:duration="500"
+        android:duration="300"
         android:pivotX="0%"
         android:pivotY="0%"
         android:startOffset="100" />

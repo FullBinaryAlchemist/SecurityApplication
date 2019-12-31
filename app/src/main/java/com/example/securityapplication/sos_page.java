@@ -435,8 +435,7 @@ catch (Exception e)
     @Override
     public void onBackPressed(){
         ReturnIntent.putExtra("ResultIntent",user);
-        //Log.d("SignUp2 ","Returned Completed User Object"+user.getMobile()+user.getLocation());
-        setResult(10,ReturnIntent);//to finish sing up 1 activity
+        setResult(10,ReturnIntent);//to finish navigation activity
         finish();
     }
     public void edit() {

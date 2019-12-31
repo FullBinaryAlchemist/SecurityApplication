@@ -20,6 +20,27 @@
         <item name="android:windowBackground">@drawable/background_dialog</item>
     </style>
 
+    <style name="animationdialog">
+        <item name="@android:windowEnterAnimation">@anim/dialog_in</item>
+        <item name="@android:windowExitAnimation">@anim/dialog_out</item>
+    </style>
+
+    <style name="MyAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/startcolor</item>
+        <item name="android:gravity">center_horizontal</item>
+
+        <item name="android:bottomBright">@drawable/background_dialog</item>
+        <item name="android:bottomDark">@drawable/background_dialog</item>
+        <item name="android:centerBright">@drawable/background_dialog</item>
+        <item name="android:centerDark">@drawable/background_dialog</item>
+        <item name="android:centerMedium">@drawable/background_dialog</item>
+        <item name="android:fullBright">@drawable/background_dialog</item>
+        <item name="android:fullDark">@drawable/background_dialog</item>
+        <item name="android:topBright">@drawable/background_dialog</item>
+        <item name="android:topDark">@drawable/background_dialog</item>
+
+    </style>
+
     <style name="datepicker" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:datePickerDialogTheme">@color/colorPrimary</item>
 

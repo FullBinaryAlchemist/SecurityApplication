@@ -45,10 +45,10 @@ public class saviour_fragment extends Fragment {
         final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext(),R.style.CustomDialogTheme);
         TextView title = new TextView(getContext());
         // You Can Customise your Title here
-        title.setText("COMING SOON ...");
+        title.setText("Coming Soon ...");
         //title.setBackgroundColor(Color.DKGRAY);
-        title.setPadding(10, 100, 10, 100);
-        title.setTextSize(100);
+        title.setPadding(20, 60, 20, 60);
+        title.setTextSize(80);
         title.setGravity(Gravity.CENTER);
         title.setTextColor(Color.WHITE);
         title.setTextSize(40);
