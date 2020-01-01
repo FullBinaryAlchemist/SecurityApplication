@@ -176,9 +176,9 @@ public class SignUp1Activity extends AppCompatActivity {
 
         KeyboardHelper.hideSoftKeyboard(SignUp1Activity.this, view);
         Hashtable<String,String> userData = Validater();
-        Toast.makeText(SignUp1Activity.this, "Please stay here..", Toast.LENGTH_LONG).show();
         if (userData != null){
             // disable screen and show spinner
+            Toasty.info(SignUp1Activity.this, "Please stay here..", Toast.LENGTH_LONG).show();
             spinner.setVisibility(View.VISIBLE);
             disable();
             setUidFromFirebase(userData);
@@ -218,9 +218,6 @@ public class SignUp1Activity extends AppCompatActivity {
                                 spinner.setVisibility(View.GONE);
                                 Enable();
                                 Toasty.error(SignUp1Activity.this, "Invalid Password, Use forgot password in case you forgot your password", Toast.LENGTH_LONG, true).show();
-
-                               /* Toast.makeText(SignUp1Activity.this,
-                                        "Invalid Password, Use forgot password in case you forgot your password",Toast.LENGTH_LONG).show();*/
                             }
                             catch (Exception e)
                             {
@@ -263,9 +260,6 @@ public class SignUp1Activity extends AppCompatActivity {
                                 verifyEmailButton.setAlpha(1);*/
                                 Log.d(TAG,e.getMessage());
                                 Toasty.error(SignUp1Activity.this, "Invalid Password, Use forgot password in case you forgot your password", Toast.LENGTH_LONG, true).show();
-
-                              /*  Toast.makeText(SignUp1Activity.this,
-                                        "Invalid Password, Use forgot password in case you forgot your password",Toast.LENGTH_LONG).show();*/
                             }catch (Exception e){
                                 // stop spinner
                                 spinner.setVisibility(View.GONE);
@@ -276,8 +270,6 @@ public class SignUp1Activity extends AppCompatActivity {
                                 verifyEmailButton.setAlpha(1);*/
                                 Log.d(TAG, "Exception while signIN:"+e.getMessage());
                                 Toasty.error(SignUp1Activity.this, "Authentication failed. Please check connection and try again", Toast.LENGTH_LONG, true).show();
-
-                                //Toast.makeText(SignUp1Activity.this,"Authentication failed. Please check connection and try again", Toast.LENGTH_LONG).show();
                             }
                         }
                     }
@@ -360,7 +352,7 @@ public class SignUp1Activity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 Log.d(TAG,databaseError.getDetails());
-                Toast.makeText(SignUp1Activity.this, "Inside setUidFromFirebase SignUp1:"+databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                Toasty.warning(SignUp1Activity.this, "Please check your connection and try again", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -376,8 +368,6 @@ public class SignUp1Activity extends AppCompatActivity {
             spinner.setVisibility(View.GONE);
             Enable();
             Toasty.error(SignUp1Activity.this, "Email is already registered", Toast.LENGTH_LONG, true).show();
-
-           // Toast.makeText(SignUp1Activity.this, "Email is already registered",Toast.LENGTH_LONG).show();
             spinner.setVisibility(View.GONE);
             Enable();
         }

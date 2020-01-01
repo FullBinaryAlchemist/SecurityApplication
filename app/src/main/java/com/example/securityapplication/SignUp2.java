@@ -204,12 +204,10 @@ public class SignUp2 extends AppCompatActivity {
                 Animation sub_anim= AnimationUtils.loadAnimation(SignUp2.this,R.anim.btn_anim);
                 btn_submit.startAnimation(sub_anim);
                 KeyboardHelper.hideSoftKeyboard(SignUp2.this, view);
-                Toast.makeText(SignUp2.this, "Please stay here", Toast.LENGTH_LONG).show();
+                Toasty.info(SignUp2.this, "Please stay here", Toast.LENGTH_LONG).show();
 
                 if (!(validation.validateName(textinputName) & validation.validateGender(gender_grp,text_view) & validation.validateDob(textinputDOB))){
                     Toasty.error(SignUp2.this, "Enter Valid Credentials", Toast.LENGTH_SHORT, true).show();
-
-                    //Toast.makeText(SignUp2.this,"Enter Valid Credentials",Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -302,7 +300,7 @@ public class SignUp2 extends AppCompatActivity {
                             Spinner.setVisibility(View.GONE);
                             Enable();
                             btn_submit.setText("SIGNUP");
-                            Toast.makeText(SignUp2.this, "Please fill the details",Toast.LENGTH_SHORT).show();
+                            Toasty.info(SignUp2.this, "Please fill the details",Toast.LENGTH_SHORT).show();
 
                             // go back to signUp1
                             finishActivity(2);
@@ -318,8 +316,6 @@ public class SignUp2 extends AppCompatActivity {
                     } else {
                         Log.d("SignUp2", "User exists ");
                         Toasty.error(getApplicationContext(), "MOBILE NO. ALREADY EXISTS", Toast.LENGTH_LONG, true).show();
-
-                        //Toast.makeText(getApplicationContext(), "MOBILE NO. ALREADY EXISTS", Toast.LENGTH_LONG).show();
                         Spinner.setVisibility(View.GONE);
                         Enable();
                         btn_submit.setText("SIGNUP");
@@ -422,7 +418,7 @@ public class SignUp2 extends AppCompatActivity {
         if (FirebaseAuth.getInstance().getCurrentUser() != null)
             writeEmailToFirebase(firebaseUser);
         else
-            Toast.makeText(SignUp2.this, "Please signup again.", Toast.LENGTH_SHORT).show();
+            Toasty.info(SignUp2.this, "Please signup again.", Toast.LENGTH_SHORT).show();
     }
 
     private void writeEmailToFirebase(final FirebaseUser firebaseUser){
@@ -434,11 +430,10 @@ public class SignUp2 extends AppCompatActivity {
             public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                 if (databaseError != null){
                     Log.d(TAG,"Email Data could not be saved " + databaseError.getMessage());
-                    Toast.makeText(SignUp2.this, "error in writeEmailtofirebase Signup2:"+databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                     if (databaseError.getCode() == -3) {
                         // -3 : Permission denied to write in firebase
-                        Toasty.error(SignUp2.this, "Account already registered", Toast.LENGTH_LONG, true).show();
-                    }else Toast.makeText(SignUp2.this,"In email:"+databaseError.getMessage(),Toast.LENGTH_LONG).show();
+                        Toasty.warning(SignUp2.this, "Account already registered", Toast.LENGTH_LONG, true).show();
+                    }else Toasty.warning(SignUp2.this, "Please check your connection and try again", Toast.LENGTH_SHORT).show();
                     firebaseHelper.firebaseSignOut();
                     firebaseHelper.googleSignOut(SignUp2.this);
                     redirectToMainActivity();
@@ -459,9 +454,9 @@ public class SignUp2 extends AppCompatActivity {
                 if (databaseError != null){
                     Log.d(TAG,"Device Data could not be saved " + databaseError.getMessage());
                     if (databaseError.getCode() == -3)
-                        Toast.makeText(SignUp2.this, "Permission denied in device", Toast.LENGTH_SHORT).show();
+                        Toasty.warning(SignUp2.this, "Permission denied", Toast.LENGTH_SHORT).show();
                     else
-                        Toast.makeText(SignUp2.this, "error in writeDevicetofirebase Signup2:"+databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toasty.warning(SignUp2.this, "Please check your connection", Toast.LENGTH_SHORT).show();
                     deleteDataFromFirebase(firebaseUser);
                 }
                 else {
@@ -481,9 +476,9 @@ public class SignUp2 extends AppCompatActivity {
                 if (databaseError != null){
                     Log.d(TAG,"User Data could not be saved " + databaseError.getMessage());
                     if (databaseError.getCode() == -3)
-                        Toast.makeText(SignUp2.this, "Permission denied in user", Toast.LENGTH_SHORT).show();
+                        Toasty.warning(SignUp2.this, "Permission denied", Toast.LENGTH_SHORT).show();
                     else
-                        Toast.makeText(SignUp2.this, "error in writeUsertofirebase Signup2:"+databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toasty.warning(SignUp2.this, "Please check your connection and try again", Toast.LENGTH_SHORT).show();
                     deleteDataFromFirebase(firebaseUser);
                 }
                 else {
@@ -493,14 +488,12 @@ public class SignUp2 extends AppCompatActivity {
                             gotoNextActivity();
                         }
                         else {
-                            Toasty.error(getApplicationContext(), "Data not stored in sqlite Signup2", Toast.LENGTH_LONG, true).show();
-                            Toast.makeText(SignUp2.this, "Authentication failed. Try to login", Toast.LENGTH_SHORT).show();
+                            Toasty.error(SignUp2.this, "Authentication failed. Try to login", Toast.LENGTH_SHORT).show();
                             LogOutUser();
                         }
                     }catch (Exception e){
                         Log.d(TAG,e.getMessage());
-                        Toasty.error(getApplicationContext(), "Sqlite error occurred Signup2", Toast.LENGTH_LONG, true).show();
-                        Toast.makeText(SignUp2.this, "Authentication failed. Try to login", Toast.LENGTH_SHORT).show();
+                        Toasty.error(SignUp2.this, "Authentication failed. Try to login", Toast.LENGTH_SHORT).show();
                         LogOutUser();
                     }
                 }
@@ -536,18 +529,17 @@ public class SignUp2 extends AppCompatActivity {
                 firebaseHelper.getEmailDatabaseReference().child(emailKey).removeValue();
             }catch (Exception e){
                 Log.d(TAG,"Exception while deleting:"+e.getMessage());
-                Toast.makeText(SignUp2.this, "Exception while deleting:"+e.getMessage(),Toast.LENGTH_LONG).show();
             }
         }
         Spinner.setVisibility(View.GONE);
         Enable();
         btn_submit.setText("SIGNUP");
-        Toast.makeText(SignUp2.this, "Authentication failed", Toast.LENGTH_SHORT).show();
+        Toasty.error(SignUp2.this, "Authentication failed", Toast.LENGTH_SHORT).show();
     }
 
     private void gotoNextActivity(){
         if (FirebaseAuth.getInstance().getCurrentUser() != null){
-            Toast.makeText(getApplicationContext(), "YOU ARE NOW A SAVIOUR", Toast.LENGTH_LONG).show();
+            Toasty.success(getApplicationContext(), "YOU ARE NOW A SAVIOUR", Toast.LENGTH_LONG).show();
             // start next activity
             // check if user is signed in to google or facebook
             if (GoogleSignIn.getLastSignedInAccount(SignUp2.this) != null){
@@ -558,7 +550,7 @@ public class SignUp2 extends AppCompatActivity {
             startSosContactActivity();
         }
         else {
-            Toast.makeText(SignUp2.this, "Authentication failed. Try to login", Toast.LENGTH_SHORT).show();
+            Toasty.info(SignUp2.this, "Authentication failed. Try to login", Toast.LENGTH_SHORT).show();
             // redirect user to MainActivity
             LogOutUser();
         }

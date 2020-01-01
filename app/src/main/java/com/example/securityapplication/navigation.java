@@ -307,7 +307,6 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 Log.d(TAG,"Imei not made null");
-                Toast.makeText(navigation.this, "Imei not made null in navigation",Toast.LENGTH_LONG).show();
             }
         });
         firebaseHelper.firebaseSignOut();

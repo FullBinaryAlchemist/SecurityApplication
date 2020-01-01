@@ -64,8 +64,8 @@ public class GetGPSCoordinates extends Service {
         Log.d("GPSService", "Oncreate");
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         locationRequest = LocationRequest.create();
-        locationRequest.setInterval(4*1000);
-        locationRequest.setFastestInterval(2*1000);
+        locationRequest.setInterval(5*60*1000); //NOTE:changed to 5 mins
+        locationRequest.setFastestInterval(3*60*1000); //NOTE:changed to 2 mins
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
 

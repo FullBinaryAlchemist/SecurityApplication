@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.util.Log;
 
 import com.example.securityapplication.GoogleFirebaseSignIn;
@@ -16,7 +17,6 @@ import java.io.IOException;
 
 public class InternalStorage {
 
-    private File imagePath;
     private static volatile InternalStorage internalStorageInstance;
     final static private String TAG = "InternalStorage";
     private Context context;
@@ -45,38 +45,39 @@ public class InternalStorage {
 
     public void initContext(Context context){this.context = context;}
 
-    public String saveImageToInternalStorage(Bitmap bitmapImage, String email){
-        ContextWrapper cw = new ContextWrapper(context);
-        // path to /data/data/yourapp/app_data/imageDir
-        File directory = cw.getDir(email, Context.MODE_PRIVATE);
-        // Create imageDir
-        File mypath=new File(directory,"profile.jpeg");
+    public void createDirectoryAndSaveFile(Bitmap imageToSave, String filePath) {
 
-        FileOutputStream fos = null;
+        File direct = new File(filePath);
+
+        if (!direct.exists()) {
+            File profilePicDir = new File(filePath);
+            profilePicDir.mkdirs();
+        }
+
+        File file = new File(filePath);
+        if (file.exists()) {
+            file.delete();
+        }
         try {
-            fos = new FileOutputStream(mypath);
-            // Use the compress method on the BitMap object to write image to the OutputStream
-            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 60, fos);
+            FileOutputStream out = new FileOutputStream(file);
+            imageToSave.compress(Bitmap.CompressFormat.JPEG, 80, out);
+            out.flush();
+            out.close();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            try {
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
-        return directory.getAbsolutePath();
     }
 
-    public File getImagePathFromStorage(String email) {
-
+    public Uri getCaptureImageOutputUri(String email) {
+        Uri outputFileUri = null;
         try {
-            File directory = new ContextWrapper(context).getDir(email, Context.MODE_PRIVATE);
-            return new File(directory.getAbsolutePath(), "profile.jpeg");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            File getImage = context.getExternalFilesDir("");
+            if (getImage != null) {
+                outputFileUri = Uri.fromFile(new File(getImage.getPath(), email+"/profile.jpeg"));
+            }
+        }catch (Exception e){
+            Log.d(TAG,e.getMessage());
         }
+        return outputFileUri;
     }
 }

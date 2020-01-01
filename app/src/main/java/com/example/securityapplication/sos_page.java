@@ -131,7 +131,7 @@ public class sos_page extends AppCompatActivity {
             Cursor res;
             res = mydb.getSosContacts();
             if (res.getCount() == 0){
-                Toasty.error(getApplicationContext(),
+                Toasty.info(getApplicationContext(),
                         "Please enter atleast 1 contact for emergency",
                         Toast.LENGTH_LONG).show();
 

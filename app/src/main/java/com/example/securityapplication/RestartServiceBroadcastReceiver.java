@@ -21,7 +21,7 @@ public class RestartServiceBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.i(RestartServiceBroadcastReceiver.class.getSimpleName(), "Restarting service on stopped service");
-        Toasty.info(context, "Service restarted", Toast.LENGTH_SHORT, true).show();//TODO:Remove toasty
+        //Toasty.info(context, "Service restarted", Toast.LENGTH_SHORT, true).show();//TODO:Remove toasty
 
         //Toast.makeText(context, "Service restarted", Toast.LENGTH_SHORT).show();
         scheduleJob(context);

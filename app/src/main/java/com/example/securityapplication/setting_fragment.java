@@ -17,7 +17,7 @@ import es.dmoral.toasty.Toasty;
 
 public class setting_fragment extends Fragment {
     Button sos;
-    Button rate_us,scream,invite,privacy,community,feedback; //added community
+    Button rate_us,scream,invite,privacy,community,aboutus,feedback; //added community
     String str="Check out TRATA, I use it to protect myself and the people I care about. Get it for free at \nhttp://innovatiivecreators.in/download/";
     @Nullable
     @Override
@@ -42,6 +42,7 @@ public class setting_fragment extends Fragment {
                 startActivity(intent);
             }
         });
+        aboutus=getActivity().findViewById(R.id.aboutus);
         privacy.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -56,11 +57,21 @@ public class setting_fragment extends Fragment {
                 Toasty.info(getContext(), "This feature is coming soon...", Toast.LENGTH_SHORT, true).show();
             }
         });
-        //added coming soon message for Community
+        //Added about us activity intent
+        aboutus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent aboutus= new Intent(getActivity(),AboutUs.class);
+                startActivity(aboutus);
+            }
+        });
+        //NOTE:changed to blog Community
         community.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toasty.info(getContext(), "This feature is coming soon...", Toast.LENGTH_SHORT, true).show();
+                Uri uri = Uri.parse("http://trataindia.blogspot.com"); //TODO:replace uri with blog url
+                Intent priva = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(priva);
             }
         });
 

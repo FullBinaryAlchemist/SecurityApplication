@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.securityapplication">
-
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -31,7 +30,6 @@
     <uses-feature
         android:name="android.hardware.camera.flash"
         android:required="false" />
-
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -43,6 +41,8 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning"
         tools:replace="android:appComponentFactory">
+        <activity android:name=".AboutUs"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".recent_cards"
             android:screenOrientation="portrait" />
@@ -58,22 +58,14 @@
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".SignUp2"
-            android:screenOrientation="portrait"></activity>
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
         <activity
             android:name=".SignUp1Activity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden">
-
-            <!-- <intent-filter> -->
-
-
-            <!-- <action android:name="android.intent.action.MAIN"/> -->
-            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-
-            <!-- </intent-filter> -->
         </activity>
-
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -84,7 +76,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity" android:screenOrientation="portrait" />
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:screenOrientation="portrait" />
 
         <receiver
             android:name=".deliveryReceiver"
@@ -100,6 +94,15 @@
             android:exported="true"
             android:label="RestartServiceWhenStopped" />
 
+        <receiver
+            android:name=".PowerButtonBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SCREEN_OFF" />
+                <action android:name="android.intent.action.SCREEN_ON" />
+            </intent-filter>
+        </receiver>
         <service
             android:name=".SendSMSService"
             android:enabled="true"
@@ -108,23 +111,15 @@
             android:name=".SosPlayer"
             android:enabled="true"
             android:exported="true" />
+
         <service android:name=".BackgroundSosPlayerService" />
-        <receiver
-            android:name=".PowerButtonBroadcastReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.SCREEN_OFF"/>
-                <action android:name="android.intent.action.SCREEN_ON"/>
-            </intent-filter>
-        </receiver>
+
         <service
             android:name=".RestartJobService"
             android:enabled="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
         <service
             android:name=".GetGPSCoordinates"
-
             android:enabled="true"
             android:exported="true" />
         <provider
@@ -136,19 +131,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
-<!--        <provider-->
-<!--            android:name="android.support.v4.content.FileProvider"-->
-<!--            android:authorities="${applicationId}.provider"-->
-<!--            android:exported="false"-->
-<!--            android:grantUriPermissions="true">-->
-<!--            <meta-data-->
-<!--                android:name="android.support.FILE_PROVIDER_PATHS"-->
-<!--                android:resource="@xml/file_paths">-->
-<!--            </meta-data>-->
-<!--        </provider>-->
-
-
     </application>
 
 </manifest>
