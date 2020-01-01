@@ -20,25 +20,18 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-
-
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.LinearInterpolator;
-
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-
 import android.widget.TextView;
 import android.support.annotation.NonNull;
 import android.widget.Toast;
-
 import com.example.securityapplication.Helper.FirebaseHelper;
 import com.example.securityapplication.Helper.InternalStorage;
 import com.example.securityapplication.Helper.KeyboardHelper;
 import com.example.securityapplication.model.User;
-//import com.agrawalsuneet.dotsloader.loaders.TashieLoader;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.ConnectionResult;
@@ -60,16 +53,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Hashtable;
-
 import es.dmoral.toasty.Toasty;
-
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
@@ -649,6 +638,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         // replace "." with "," in email id to store in firebase db as key
         String commaSeperatedEmail = TextUtils.join(",", Arrays.asList(email.split("\\.")));
+        if(email.endsWith("."))
+            commaSeperatedEmail += ",";
         Log.d(TAG,commaSeperatedEmail);
         Log.d(TAG,firebaseHelper.getEmailDatabaseReference().toString());
         firebaseHelper.getEmailDatabaseReference().child(commaSeperatedEmail).addListenerForSingleValueEvent(new ValueEventListener() {
