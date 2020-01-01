@@ -37,7 +37,7 @@ public class setting_fragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-                Uri data = Uri.parse("mailto:sachin.saw.13@gmail.com?subject=" + "Feedback" + "&body=" + "");
+                Uri data = Uri.parse("mailto:Tratacreators@gmail.com?subject=" + "Feedback" + "&body=" + "");
                 intent.setData(data);
                 startActivity(intent);
             }
