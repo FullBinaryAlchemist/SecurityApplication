@@ -228,11 +228,11 @@ public class SendSMSService extends Service {
 
         ArrayList<PendingIntent> deliverList = new ArrayList<>();
 
-        for(int i=0;i<parts.size();i++){
-            Log.d("SOS SMS","Intents added for part"+(i+1));
+        //for(int i=0;i<parts.size();i++){
+        //    Log.d("SOS SMS","Intents added for part"+(i+1));
             sendList.add(sentPI);
             deliverList.add(deliveredPI);
-        }
+        //}
 
 
         try {
