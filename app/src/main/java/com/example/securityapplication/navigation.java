@@ -56,7 +56,7 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
     static User newUser=UserObject.user;
     Boolean is_home=true;
     SQLiteDBHelper db;
-    public static Boolean test=true;
+    public static Boolean test=false;//NOTE: DO NOT CHANGE TO TRUE
     public static TextView tmode1;
 
     private int flag=0;

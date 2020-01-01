@@ -46,8 +46,7 @@ public class home_fragment extends Fragment {
     public Button informsafety;
     static public boolean check=false;
     int RC;
-    Boolean is_paid = true;
-    public static Boolean test = true;
+    Boolean is_paid = false;//NOTE: DO NOT CHANGE TO TRUE
     //NOTE: Button bt has been removed. Now using Button emergency. Event listeners also moved to emergency
     @Nullable
     @Override
