@@ -46,6 +46,10 @@ public class GetGPSCoordinates extends Service {
     private GoogleApiClient client;
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
 
+    //stores the main zone[in degrees(longitude,latitude)] and sub-zone[in minutes (longitude,latitude)]
+    private static  String zone;
+    private static String sub_zone;
+
 
     @Nullable
     @Override
@@ -205,6 +209,7 @@ public class GetGPSCoordinates extends Service {
         String Strlat= Location.convert(ilat,Location.FORMAT_SECONDS);
         String[] split_Strlat=Strlat.split(":");
         latResult=split_Strlat[0]+"°"+split_Strlat[1]+"\'"+split_Strlat[2]+"\'\'";
+
         latResult += (lat >= 0)? "N" : "S";
 
         // Check the correspondence of the coordinates for longitude: East or West.
@@ -213,10 +218,30 @@ public class GetGPSCoordinates extends Service {
         lngResult=split_Strlon[0]+"°"+split_Strlon[1]+"\'"+split_Strlon[2]+"\'\'";
         lngResult += (lng >= 0)? "E" : "W";
 
+        //calls the set zone and subzone
+        setZoneSubzone(split_Strlon[0],split_Strlon[1],split_Strlat[0],split_Strlat[1]);
+
         DMS_coordinates=latResult+"+"+lngResult;
         Log.d("GPSService/Conversion","INPUT:"+ilat+","+ilng+" result:"+DMS_coordinates);
 
         return DMS_coordinates;
+    }
+
+    /**sets the degree-zone and minutes-subzone of the coordinate **/
+    public void setZoneSubzone(String zone_long,String zone_lat,String subzone_long,String subzone_lat){
+        //"longitude,latitude"
+        zone=zone_long+","+zone_lat;
+        sub_zone= subzone_long+","+subzone_lat;
+
+        Log.d("GetGPSCoordinates","Zone:"+zone+" subzone:"+sub_zone);
+    }
+
+    public static String getZone(){
+        return zone;
+    }
+
+    public static String getSub_zone(){
+        return sub_zone;
     }
 
     @Override
