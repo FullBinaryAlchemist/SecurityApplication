@@ -219,7 +219,7 @@ public class GetGPSCoordinates extends Service {
         lngResult += (lng >= 0)? "E" : "W";
 
         //calls the set zone and subzone
-        setZoneSubzone(split_Strlon[0],split_Strlon[1],split_Strlat[0],split_Strlat[1]);
+        setZoneSubzone(split_Strlon[0],split_Strlat[0],split_Strlon[1],split_Strlat[1]); //NOTE: was earlier [0],[1],[0],[1] which was wrong
 
         DMS_coordinates=latResult+"+"+lngResult;
         Log.d("GPSService/Conversion","INPUT:"+ilat+","+ilng+" result:"+DMS_coordinates);
