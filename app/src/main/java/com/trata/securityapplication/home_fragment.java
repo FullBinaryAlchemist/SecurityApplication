@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.DialogInterface;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -25,6 +26,10 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.trata.securityapplication.Helper.FirebaseHelper;
 
 import java.util.Objects;
 
@@ -122,6 +127,31 @@ public class home_fragment extends Fragment {
                     assert c2 != null;
                     c2.startService(emergencyintent2);
 
+
+                    //TODO:Add entry in firebase
+                    FirebaseHelper firebaseHelper= FirebaseHelper.getInstance();
+                    String formattedSubZone= GetGPSCoordinates.getFormattedZoning(GetGPSCoordinates.getSub_zone());
+                    String uid=firebaseHelper.getFirebaseAuth().getUid();
+
+                    try {
+                        firebaseHelper.getAlertsDatabaseReference().child(uid).child("subzone").setValue(formattedSubZone).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if(task.isSuccessful()){
+                                    Toasty.success(getContext(),"Emergrency raised on FIrebase",Toasty.LENGTH_LONG).show();
+                                }
+                                else{
+                                    Toasty.error(getContext(), "Emergency firebase failed", Toast.LENGTH_SHORT, true).show();
+                                }
+                            }
+                        });
+                        firebaseHelper.getAlertsDatabaseReference().child(uid).child("location").setValue(GetGPSCoordinates.getddLastKnownLocation());
+                    }catch (Exception e){
+                        Log.d("home_fragment","Emergency creation on firebase failed");
+                        e.printStackTrace();
+                        Toasty.error(getContext(), "Emergency creation on firebase failed"+e.getMessage(), Toast.LENGTH_SHORT, true).show();
+
+                    }
 
                 } else {
                     //if user using free services only
