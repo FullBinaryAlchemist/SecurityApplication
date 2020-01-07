@@ -30,10 +30,13 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.trata.securityapplication.Helper.FirebaseHelper;
+import com.trata.securityapplication.model.Alert;
 
 import java.util.Objects;
 
 import es.dmoral.toasty.Toasty;
+
+import static com.trata.securityapplication.navigation.test;
 
 public class home_fragment extends Fragment {
 
@@ -43,6 +46,8 @@ public class home_fragment extends Fragment {
     static public boolean check=false;
     int RC;
     Boolean is_paid = false;//NOTE: DO NOT CHANGE TO TRUE
+    private Alert alertobj;//This is Model Object to push to firebase
+    private FirebaseHelper firebaseHelper= FirebaseHelper.getInstance();
     //NOTE: Button bt has been removed. Now using Button emergency. Event listeners also moved to emergency
     @Nullable
     @Override
@@ -58,6 +63,9 @@ public class home_fragment extends Fragment {
         alert = Objects.requireNonNull(getActivity()).findViewById(R.id.alert);
         emergency = getActivity().findViewById(R.id.emergency);
         informsafety = getActivity().findViewById(R.id.inform);
+
+        firebaseHelper= FirebaseHelper.getInstance(); //NOTE:Added FirebaseHelper
+
         final android.support.v7.widget.Toolbar toolbar1 = (Toolbar) getActivity().findViewById(R.id.toolbar);
 
 
@@ -128,29 +136,40 @@ public class home_fragment extends Fragment {
                     c2.startService(emergencyintent2);
 
 
-                    //TODO:Add entry in firebase
-                    FirebaseHelper firebaseHelper= FirebaseHelper.getInstance();
-                    String formattedSubZone= GetGPSCoordinates.getFormattedZoning(GetGPSCoordinates.getSub_zone());
-                    String uid=firebaseHelper.getFirebaseAuth().getUid();
 
-                    try {
-                        firebaseHelper.getAlertsDatabaseReference().child(uid).child("subzone").setValue(formattedSubZone).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    //check if not test mode.Otherwise don't raise entry on firebase
+                    if(!test){
+                        String formattedSubZone= GetGPSCoordinates.getFormattedZoning(GetGPSCoordinates.getSub_zone());
+                        String uid=firebaseHelper.getFirebaseAuth().getUid();
+                        String ddLastKnownLocation =GetGPSCoordinates.getddLastKnownLocation();
+                        Log.d("home_fragment","Emergency: formattedSubZone:"+formattedSubZone+"\nuid:"+uid+"\nlocation:"+ddLastKnownLocation);
+                        alertobj= new Alert();
+                        alertobj.setLocation(ddLastKnownLocation);
+                        alertobj.setSubzone(formattedSubZone);
+
+                        //TODO:check whether an Emergency has already been raised by User. If there already exists then don't create another entry
+
+                        try {
+                        firebaseHelper.getAlertsDatabaseReference().child(uid).setValue(alertobj)
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if(task.isSuccessful()){
-                                    Toasty.success(getContext(),"Emergrency raised on FIrebase",Toasty.LENGTH_LONG).show();
+                                    Log.d("home_fragment","Firebase:Alert added in Firebase");
+                                    Toasty.success(getContext(),"Alert added in FIrebase",Toasty.LENGTH_LONG).show();
                                 }
                                 else{
-                                    Toasty.error(getContext(), "Emergency firebase failed", Toast.LENGTH_SHORT, true).show();
+                                    Log.d("home_fragment","Firebase:Alert NOT ADDED in Firebase");
+                                    Toasty.error(getContext(), "Firebase entry failed", Toast.LENGTH_SHORT, true).show();
                                 }
                             }
                         });
-                        firebaseHelper.getAlertsDatabaseReference().child(uid).child("location").setValue(GetGPSCoordinates.getddLastKnownLocation());
-                    }catch (Exception e){
+                        }catch (Exception e){
                         Log.d("home_fragment","Emergency creation on firebase failed");
                         e.printStackTrace();
                         Toasty.error(getContext(), "Emergency creation on firebase failed"+e.getMessage(), Toast.LENGTH_SHORT, true).show();
 
+                        }
                     }
 
                 } else {
@@ -229,7 +248,7 @@ public class home_fragment extends Fragment {
                     Log.d("home_fragment", "catch raised");
                 }
 
-
+                //TODO:Check if emergency was created on Firebase .If it was then , delete the entry and update history
 
 
             }
