@@ -36,6 +36,8 @@ public class GetGPSCoordinates extends Service {
     private LocationListener listener;
     private LocationManager locationManager;
     private static String lastKnownLocation=null;
+    private static String ddLastKnownLocation=null;
+
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
@@ -56,6 +58,8 @@ public class GetGPSCoordinates extends Service {
     public static String getLastKnownLocation(){
         return lastKnownLocation;
     }
+
+    public static String getddLastKnownLocation(){ return ddLastKnownLocation; }
 
     @SuppressLint("MissingPermission")
     @Override
@@ -122,8 +126,10 @@ public class GetGPSCoordinates extends Service {
                     }
                     for (Location location : locationResult.getLocations()) {
                         if (location != null) {
+                            GetGPSCoordinates.ddLastKnownLocation=location.getLatitude()+","+ location.getLongitude();
                             GetGPSCoordinates.lastKnownLocation = ddToDms(location.getLatitude(), location.getLongitude());
                             Log.d("GPS Service Running", "Coordinates = Latitude = " + location.getLatitude() + " Longitude = " + location.getLongitude());
+
                         } else {
                             Log.d("GPS Service","Location Fetch failed");
                             Toast.makeText(getApplicationContext(), "Location Fetch Failed", Toast.LENGTH_SHORT).show();
@@ -230,6 +236,14 @@ public class GetGPSCoordinates extends Service {
         sub_zone= subzone_long+","+subzone_lat;
 
         Log.d("GetGPSCoordinates","Zone:"+zone+" subzone:"+sub_zone);
+
+        //TODO:Complete the Call Subscribe and Unsubscribe for 8-way approach Code here
+        //Example to subscribe to a single zone
+        String topic=EmergencyMessagingService.getTopicString(getZone(),getSub_zone());
+        EmergencyMessagingService.subscribeTopic(topic);
+        Log.d("Subscription","Subscribed to topic"+topic);
+        Toasty.info(getApplicationContext(),"Subscribed to topic"+topic,Toasty.LENGTH_LONG).show();
+
     }
 
     public static String getZone(){
@@ -238,6 +252,11 @@ public class GetGPSCoordinates extends Service {
 
     public static String getSub_zone(){
         return sub_zone;
+    }
+
+    //returns subzone with underscore separator
+    public static String getFormattedZoning(String z){
+        return z.split(",")[0]+"_"+z.split(",")[1];
     }
 
     @Override

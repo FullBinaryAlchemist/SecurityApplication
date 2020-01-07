@@ -246,7 +246,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
                     }
                 });
-    startService(new Intent(this,EmergencyMessagingService.class));
+        EmergencyMessagingService.subscribeTopic("alerts_72_19_24_34");
+        startService(new Intent(this,EmergencyMessagingService.class));
+        //Handles the data received when Emergency Notification is clicked
+        if (getIntent().getExtras() != null) {
+
+            for (String key : getIntent().getExtras().keySet()) {
+
+                Object value = getIntent().getExtras().get(key);
+
+                Log.d(TAG, "Key: " + key + " Value: " + value);
+
+            }
+
+        }
     }
 
     public void onStart(){

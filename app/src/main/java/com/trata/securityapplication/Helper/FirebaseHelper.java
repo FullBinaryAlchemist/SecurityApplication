@@ -34,6 +34,8 @@ public class FirebaseHelper {
     private FirebaseStorage firebaseStorage;
     StorageReference storageReference;
 
+    private DatabaseReference mAlertsDatabaseReference;
+
     public void initFirebase(){
         mAuth = FirebaseAuth.getInstance();
         mFirebaseDatabase = FirebaseDatabase.getInstance();
@@ -77,6 +79,7 @@ public class FirebaseHelper {
         mDevicesDatabaseReference = mFirebaseDatabase.getReference().child("Devices");
         mUsersDatabaseReference = mFirebaseDatabase.getReference().child("Users");
         mEmailDatabaseReference = mFirebaseDatabase.getReference().child("Email");
+        mAlertsDatabaseReference = mFirebaseDatabase.getReference().child("alerts");
     }
 
     public void initGoogleSignInClient(String server_client_id){
@@ -165,6 +168,8 @@ public class FirebaseHelper {
     public DatabaseReference getEmailDatabaseReference(){
         return mEmailDatabaseReference;
     }
+
+    public DatabaseReference getAlertsDatabaseReference() { return mAlertsDatabaseReference; }
 
     public GoogleSignInClient getGoogleSignInClient(){
         return mGoogleSignInClient;
