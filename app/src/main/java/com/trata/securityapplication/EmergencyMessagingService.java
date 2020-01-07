@@ -107,6 +107,24 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
                     }
                 });
     }
+    public static void unsubscribeTopic(final String topic){
+        FirebaseMessaging.getInstance().unsubscribeFromTopic(topic)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        String msg = "Unsubscription from topic:"+topic/*getString(R.string.msg_subscribed)*/;
+                        if (!task.isSuccessful()) {
+                            msg += " failed";/*getString(R.string.msg_subscribe_failed)*/;
+                        }
+                        Log.d(TAG, msg);
+                        //Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+    public static String getTopicString(String zone,String sub_zone){
+        return "alerts_"+zone.split(",")[0]+"_"+zone.split(",")[1]+"_"+sub_zone.split(",")[0]+"_"+sub_zone.split(",")[1];
+    }
+
     /*private void sendNotification(String messageBody) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
