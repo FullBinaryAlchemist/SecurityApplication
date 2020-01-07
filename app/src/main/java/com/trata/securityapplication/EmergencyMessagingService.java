@@ -20,12 +20,14 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.trata.securityapplication.model.AlertDetails;
 
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 public class EmergencyMessagingService extends FirebaseMessagingService {
     private static final String TAG="CloudMessagingService";
+    private RemoteMessage remoteMessage;
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // [START_EXCLUDE]
@@ -46,6 +48,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
 
         // TODO(developer): Handle FCM messages here.
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
+        this.remoteMessage= remoteMessage;
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
         // Check if message contains a data payload.
@@ -92,6 +95,24 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
      */
     private void handleNow() {
         Log.d(TAG, "Short lived task is done.");
+
+        String keys[]= {"username","liveLocation","uid"};
+
+        AlertDetails alertDetails=new AlertDetails();
+
+        alertDetails.setName((String)remoteMessage.getData().get("username"));
+        alertDetails.setLocation((String)remoteMessage.getData().get("liveLocation"));
+        alertDetails.setUid((String)remoteMessage.getData().get("uid"));
+        //TODO Add imageUrl
+        for (String key : keys) {
+
+            Object value = remoteMessage.getData().get(key);
+            Log.d(TAG, "Key: " + key + " Value: " + value);
+
+        }
+
+        AlertObjects.setAlertDetail(alertDetails.getUid(),alertDetails);
+
     }
     public static void subscribeTopic(final String topic){
         FirebaseMessaging.getInstance().subscribeToTopic(topic)
