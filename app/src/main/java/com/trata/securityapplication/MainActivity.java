@@ -38,6 +38,7 @@ import com.google.firebase.iid.InstanceIdResult;
 import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.Helper.InternalStorage;
 import com.trata.securityapplication.Helper.KeyboardHelper;
+import com.trata.securityapplication.model.AlertDetails;
 import com.trata.securityapplication.model.User;
 //import com.agrawalsuneet.dotsloader.loaders.TashieLoader;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -246,7 +247,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
                     }
                 });
-    startService(new Intent(this,EmergencyMessagingService.class));
+        EmergencyMessagingService.subscribeTopic("alerts_72_19_24_34");
+        startService(new Intent(this,EmergencyMessagingService.class));
+        //TODO:Redirect the user to saviour fragment
+        //Handles the data received when Emergency Notification is clicked
+        if (getIntent().getExtras() != null) {
+
+            Log.d(TAG+"NotificationReceived","Inside getIntent extras");
+
+            String keys[]= {"username","liveLocation","uid"};
+
+            AlertDetails alertDetails=new AlertDetails();
+
+            alertDetails.setName((String)getIntent().getExtras().get("username"));
+            alertDetails.setLocation((String)getIntent().getExtras().get("liveLocation"));
+            alertDetails.setUid((String)getIntent().getExtras().get("uid"));
+            //TODO Add imageUrl
+            for (String key : getIntent().getExtras().keySet()) {
+
+                Object value = getIntent().getExtras().get(key);
+                Log.d(TAG, "Key: " + key + " Value: " + value);
+
+            }
+
+            AlertObjects.setAlertDetail(alertDetails.getUid(),alertDetails);
+            //navigate to Saviour Fragment
+        }
     }
 
     public void onStart(){
