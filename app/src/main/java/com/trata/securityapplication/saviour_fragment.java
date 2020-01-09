@@ -51,7 +51,7 @@ public class saviour_fragment extends Fragment {
         m1=getActivity().findViewById(R.id.card_view);
         m2=getActivity().findViewById(R.id.card_view2);
   //add user here for active alerts
-   //    active("sachin2 sav","5");
+       active("sachin2 sav","5");
 
 
 if(exampleList.size()==0) {
