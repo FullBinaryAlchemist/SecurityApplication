@@ -249,7 +249,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
         EmergencyMessagingService.subscribeTopic("alerts_72_19_24_34");
         startService(new Intent(this,EmergencyMessagingService.class));
-        //TODO:Redirect the user to saviour fragment
+        //TODO:Redirect the user to saviour fragment:Completed just remove comment
+//        Intent intent=new Intent(MainActivity.this,navigation.class);
+//        intent.putExtra("saviour",true);
+//        startActivity(intent);
+
         //Handles the data received when Emergency Notification is clicked
         if (getIntent().getExtras() != null) {
 

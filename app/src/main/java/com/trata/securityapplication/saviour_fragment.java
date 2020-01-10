@@ -19,12 +19,14 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.trata.securityapplication.Helper.FirebaseHelper;
+import com.trata.securityapplication.model.AlertDetails;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class saviour_fragment extends Fragment {
     private RecyclerView mRecyclerView,mRecyclerView2;
@@ -50,8 +52,24 @@ public class saviour_fragment extends Fragment {
         mRecyclerView = getActivity().findViewById(R.id.recyclerView);
         m1=getActivity().findViewById(R.id.card_view);
         m2=getActivity().findViewById(R.id.card_view2);
+        HashMap<String, AlertDetails> detail=AlertObjects.getAllAlerts();
+        Toast.makeText(getContext(), detail.toString(), Toast.LENGTH_SHORT).show();
+        Set<String> key_set=detail.keySet();
+        if(key_set.size()>0){
+            for(String key:key_set){
+                AlertDetails ad=detail.get(key);
+                String name=ad.getName();
+                String uid=ad.getUid();
+                String location=ad.getLocation();
+                //TODO:calculate distance
+                Toast.makeText(getContext(), "active is running", Toast.LENGTH_SHORT).show();
+                if(name!=null)
+                    active(name,location);
+
+            }
+        }
   //add user here for active alerts
-       active("sachin2 sav","5");
+      // active("sachin2 sav","5");
 
 
 if(exampleList.size()==0) {
@@ -106,12 +124,13 @@ if(exampleList.size()==0) {
 
     private void active(String name, String distance) {
         exampleList.add(new exampleitem(name, "Distance: "+distance+" miter"));
+    }
+    private void store(String name){
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         String strDate= formatter.format(date);
         mydb.addhistory(name,strDate);
         update_firebase(name,strDate);
-
     }
 
     private void update_firebase(String name, String strDate) {
