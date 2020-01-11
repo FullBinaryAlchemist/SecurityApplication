@@ -38,9 +38,9 @@ public class GetGPSCoordinates extends Service {
     private static String lastKnownLocation=null;
     private static String ddLastKnownLocation=null;
 
-    private FusedLocationProviderClient mFusedLocationClient;
-    private LocationRequest locationRequest;
-    private LocationCallback locationCallback;
+    private static FusedLocationProviderClient mFusedLocationClient;
+    private static LocationRequest locationRequest;
+    private static LocationCallback locationCallback;
     private GoogleApiClient client;
     public static final String CHANNEL_ID = "ForegroundServiceChannel";
 
@@ -48,6 +48,10 @@ public class GetGPSCoordinates extends Service {
     private static  String zone;
     private static String sub_zone;
 
+    //initializing the time interval for different scenarios
+    private static long locationreq_normal;
+    private static long locationreq_fastest;
+    private static long locationreq_speedy;
 
     @Nullable
     @Override
@@ -67,13 +71,10 @@ public class GetGPSCoordinates extends Service {
 
         Log.d("GPSService", "Oncreate");
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        locationRequest = LocationRequest.create();
-        locationRequest.setInterval(5*60*1000); //NOTE:changed to 5 mins
-        locationRequest.setFastestInterval(3*60*1000); //NOTE:changed to 2 mins
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-
-
+        locationreq_normal = 5*60*1000; //Normal location fetching on every 5 mins
+        locationreq_fastest = 2*60*1000; //Fastest location fetching on every 2 mins
+        locationreq_speedy = 60*1000; //Speedy location fetching on every min
+        setLocationRequest();
         /*if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED)
             && (ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION) ==PackageManager.PERMISSION_GRANTED))
         {
@@ -145,16 +146,16 @@ public class GetGPSCoordinates extends Service {
                         Log.d("onLocationAvailabilty","Location Available will show updates");
                         //Location Available resume service
                     }else {
-                        Log.d("onLocationAvailabilty","Location Unavailable deploying intent");
-                        Toasty.warning(getApplicationContext(),"Please turn on location to help us serve you better",Toasty.LENGTH_LONG).show();
+                        Log.d("onLocationAvailabilty","Location Unavailable ");
+                        /*Toasty.warning(getApplicationContext(),"Please turn on location to help us serve you better",Toasty.LENGTH_LONG).show();
                         Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(i);
+                        startActivity(i);*/
                     }
                 }
             };
 
-            mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, getMainLooper());
+            requestLocationUpdates();
 
             Log.d("GPSService", "Notification ON");
             String input = "You are being protected";
@@ -175,10 +176,10 @@ public class GetGPSCoordinates extends Service {
             startForeground(1, notification);
         }
         else {
-            Log.d("GPS Service","Inside else, Permissions denied");
-            Toast.makeText(this,"Location Permissions not granted",Toast.LENGTH_LONG).show();
+            Log.d("GPS Service","Permissions denied : Asking for permissions");
+            Toast.makeText(this,"Location Permission is not granted, please grant the app location permission " +
+                    "to keep yourself safe in case of emergency",Toast.LENGTH_LONG).show();
         }
-
 
         return START_STICKY;
     }
@@ -298,30 +299,32 @@ public class GetGPSCoordinates extends Service {
         }
     }
 
-    private void initListener(){
-        listener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                /*Log.d("GPS Service","Fetching Location Through Network ");
-                GetGPSCoordinates.lastKnownLocation = ddToDms(location.getLatitude(), location.getLongitude());
-                Log.d("Network Location ","Latitude = "+location.getLatitude()+" Longitude = "+location.getLongitude());*/
-            }
+    public static void setLocationRequest() {
+        locationRequest = LocationRequest.create();
+        locationRequest.setInterval(locationreq_normal); //NOTE:changed to 5 mins
+        locationRequest.setFastestInterval(locationreq_fastest); //NOTE:changed to 2 mins
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        Log.d("GPSService","Location Request set successfully");
+    }
+    //Requesting Location updates
+    private static void  requestLocationUpdates() {
+        Log.d("GPS Service","Inside RequestLocationRequest");
+        mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null);
+    }
 
-            @Override
-            public void onStatusChanged(String s, int i, Bundle bundle) {
-            }
+    //To increase the frequency of location request.
+    public static void speedyLocationRequest(){
+        locationRequest.setInterval(locationreq_speedy);
+        locationRequest.setFastestInterval(locationreq_fastest);
+        requestLocationUpdates();
+        Log.d("GPS Service","speedyLocationRequest : speedy interval set to "+locationreq_speedy);
+    }
 
-            @Override
-            public void onProviderEnabled(String s) {
-            }
-
-            @Override
-            public void onProviderDisabled(String s) {
-                Log.d("GPS Service","Service provider disabled");
-                Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(i);
-            }
-        };
+    //To set the frequency back to normal.
+    public static void resetLocationRequest(){
+        locationRequest.setInterval(locationreq_normal);
+        locationRequest.setFastestInterval(locationreq_fastest);
+        requestLocationUpdates();
+        Log.d("GPS Service","resetLocationRequest : interval set to "+locationreq_normal);
     }
 }

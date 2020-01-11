@@ -55,6 +55,12 @@
         <item>Others</item>
     </string-array>
 
+    <!-- TODO: Display Dialog box content -->
+    <string name="dialog_message">Trata application uses Location services to protect you in cases of emergency. Please allow Location access to help us
+    keep you safe</string>
+    <string name="okay">Okay</string>
+
+
     <!-- TODO: Add AutoComplete Functionality -->
     <string-array name="Locality">
 

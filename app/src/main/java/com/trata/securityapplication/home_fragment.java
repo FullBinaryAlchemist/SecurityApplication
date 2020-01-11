@@ -124,6 +124,9 @@ public class home_fragment extends Fragment {
                     Context c2 = getContext();
                     check=true;
 
+                    //change the interval to 1 min.
+                    GetGPSCoordinates.speedyLocationRequest();
+
                     Intent emergencyintent1=new Intent(getContext(), BackgroundSosPlayerService.class);
 
                     if (c2 != null) {
@@ -209,7 +212,8 @@ public class home_fragment extends Fragment {
 
 
                 else{
-
+                        //reset the interval to 10 mins.
+                        GetGPSCoordinates.resetLocationRequest();
 
                         Context c3 = getContext();
 
