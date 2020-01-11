@@ -91,7 +91,7 @@ public class saviour_fragment extends Fragment {
             }
         }
   //add user here for active alerts
-      // active("sachin2 sav","5");
+       active("sachin2 sav","5");
 
 
 if(exampleList.size()==0) {
