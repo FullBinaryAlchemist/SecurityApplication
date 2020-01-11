@@ -91,6 +91,9 @@ public class saviour_fragment extends Fragment {
         }
   //add user here for active alerts
 
+       active("sachin2 sav","5");
+
+
 
 if(exampleList.size()==0) {
     //exampleList.add(new exampleitem("No-One", "All Are Safe in Your Regione :)"));
