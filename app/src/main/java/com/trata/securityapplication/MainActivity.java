@@ -282,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 finish();
             }
             else
-                Log.d(TAG,"userkname not exists");
+                Log.d(TAG,"username not exists");
         }
     }
 

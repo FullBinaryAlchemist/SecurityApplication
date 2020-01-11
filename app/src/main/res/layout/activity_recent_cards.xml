@@ -32,7 +32,7 @@
             android:textSize="18sp" />
     </LinearLayout>
 
-    <FrameLayout
+    <android.support.constraint.ConstraintLayout
         android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -43,16 +43,29 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
 
-        <TextView
+        <com.here.sdk.mapviewlite.MapViewLite
+            android:id="@+id/map_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="MAP BLOCK"
-            android:textAlignment="center"
-            android:textColor="@color/white"
-            android:textSize="36dp">
+            android:layout_height="match_parent">
 
-        </TextView>
-    </FrameLayout>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="500dp"
+                android:layout_marginBottom="32dp"
+                android:onClick="addRouteButtonClicked"
+                android:text="Add Route" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="200dp"
+                android:layout_marginTop="500dp"
+                android:layout_weight="1"
+                android:onClick="clearMapButtonClicked"
+                android:text="Clear Map" />
+        </com.here.sdk.mapviewlite.MapViewLite>
+    </android.support.constraint.ConstraintLayout>
 
 
     <LinearLayout
@@ -78,7 +91,7 @@
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/text2"
+            android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="25dp"
             android:text="Name Status"
