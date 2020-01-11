@@ -11,6 +11,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.GeoCoordinates;
@@ -21,7 +23,10 @@ import com.here.sdk.mapviewlite.MapMarkerImageStyle;
 import com.here.sdk.mapviewlite.MapScene;
 import com.here.sdk.mapviewlite.MapStyle;
 import com.here.sdk.mapviewlite.MapViewLite;
+import com.trata.securityapplication.model.AlertDetails;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -30,7 +35,7 @@ public class recent_cards extends AppCompatActivity {
     private MapViewLite mapView;
     // private MapStyle mapStyle;
     Context context = this;
-
+    private TextView name;
     public static double alertLongitude;
     public static double alertLatitude;
 
@@ -53,9 +58,15 @@ public class recent_cards extends AppCompatActivity {
         overridePendingTransition( R.anim.slide_in_up, R.anim.slide_out_up );
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recent_cards);
+        String uid=getIntent().getStringExtra("uid");
+        HashMap<String, AlertDetails> detail=AlertObjects.getAllAlerts();
+        AlertDetails ad=detail.get(uid);
+
         /** Get a MapViewLite instance from the layout.*/
         mapView = findViewById(R.id.map_view);
+        name = findViewById(R.id.name);
         mapView.onCreate(savedInstanceState);
+        name.setText(ad.getName());
         checkGPSPermission();
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {

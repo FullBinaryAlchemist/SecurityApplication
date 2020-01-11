@@ -41,6 +41,7 @@ public class saviour_fragment extends Fragment {
     SQLiteDBHelper mydb = SQLiteDBHelper.getInstance(getContext());
     final ArrayList<exampleitem> exampleList = new ArrayList<>();
     ArrayList<exampleitem> exampleList2 = new ArrayList<>();
+    List<String> user_list = new ArrayList<>();
 
     @Nullable
     @Override
@@ -73,6 +74,7 @@ public class saviour_fragment extends Fragment {
         HashMap<String, AlertDetails> detail=AlertObjects.getAllAlerts();
         Toast.makeText(getContext(), detail.toString(), Toast.LENGTH_SHORT).show();
         Set<String> key_set=detail.keySet();
+
         if(key_set.size()>0){
             for(String key:key_set){
                 AlertDetails ad=detail.get(key);
@@ -84,6 +86,7 @@ public class saviour_fragment extends Fragment {
                     String distance = calculatedistance(location, user_location);
                     //float distance = locationA.distanceTo(locationB);
                     Toast.makeText(getContext(), "active is running", Toast.LENGTH_SHORT).show();
+                    user_list.add(key);
                     active(name, distance);
                 }
 
@@ -91,7 +94,6 @@ public class saviour_fragment extends Fragment {
         }
   //add user here for active alerts
 
-       active("sachin2 sav","5");
 
 
 
@@ -125,7 +127,7 @@ if(exampleList.size()==0) {
                 Toast.makeText(getContext(), "Item "+ position +" is clicked", Toast.LENGTH_SHORT).show();
                 Intent intent=new Intent(getContext(),recent_cards.class);
                 history.exampleList=exampleList;
-                intent.putExtra("position",position);
+                intent.putExtra("uid",user_list.get(position));
                 startActivity(intent);
             }
         });
