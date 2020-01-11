@@ -234,10 +234,10 @@ public class GetGPSCoordinates extends Service {
         //"longitude,latitude"
         zone=zone_long+","+zone_lat;
         sub_zone= subzone_long+","+subzone_lat;
-
+        //correcting the subzone according to multiple of 2
+        sub_zone= ZoneFetching.getProperSubzone(getSub_zone());
         Log.d("GetGPSCoordinates","Zone:"+zone+" subzone:"+sub_zone);
 
-        //TODO:Complete the Call Subscribe and Unsubscribe for 8-way approach Code here
         //Example to subscribe to a single zone
         String topic_example=EmergencyMessagingService.getTopicString(getZone(),getSub_zone());
         EmergencyMessagingService.subscribeTopic(topic_example);
