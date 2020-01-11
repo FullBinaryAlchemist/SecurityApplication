@@ -83,7 +83,6 @@ public class saviour_fragment extends Fragment {
                     String user_location = GetGPSCoordinates.getddLastKnownLocation();
                     String distance = calculatedistance(location, user_location);
                     //float distance = locationA.distanceTo(locationB);
-
                     Toast.makeText(getContext(), "active is running", Toast.LENGTH_SHORT).show();
                     active(name, distance);
                 }
@@ -91,7 +90,6 @@ public class saviour_fragment extends Fragment {
             }
         }
   //add user here for active alerts
-      // active("sachin2 sav","5");
 
 
 if(exampleList.size()==0) {
