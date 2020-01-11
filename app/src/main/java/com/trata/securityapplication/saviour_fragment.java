@@ -1,6 +1,7 @@
 package com.trata.securityapplication;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,8 +24,10 @@ import com.trata.securityapplication.model.AlertDetails;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,6 +48,21 @@ public class saviour_fragment extends Fragment {
         return inflater.inflate(R.layout.fragment_saviour,container,false);
     }
 
+    private String calculatedistance(String location,String user_location){
+        List<String> t_loc = Arrays.asList(location.split(","));
+        List<String> u_loc = Arrays.asList(user_location.split(","));
+        Log.d("userLocation",user_location);
+        Log.d("userLocation2",location);
+        Log.d("userLocation3",u_loc.toString());
+        Location targetLocation = new Location("");//provider name is unnecessary
+        targetLocation.setLatitude(Double.valueOf(t_loc.get(0)));//your coords of course
+        targetLocation.setLongitude(Double.valueOf(t_loc.get(1)));
+        Location myLocation = new Location("");//provider name is unnecessary
+        myLocation.setLatitude(Double.valueOf(u_loc.get(0)));//your coords of course
+        myLocation.setLongitude(Double.valueOf(u_loc.get(1)));
+        float distanceInMeters =  targetLocation.distanceTo(myLocation);
+        return String.valueOf((int) distanceInMeters);
+    }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -60,11 +78,15 @@ public class saviour_fragment extends Fragment {
                 AlertDetails ad=detail.get(key);
                 String name=ad.getName();
                 String uid=ad.getUid();
-                String location=ad.getLocation();
-                //TODO:calculate distance
-                Toast.makeText(getContext(), "active is running", Toast.LENGTH_SHORT).show();
-                if(name!=null)
-                    active(name,location);
+                if(name!=null) {
+                    String location = ad.getLocation();
+                    String user_location = GetGPSCoordinates.getddLastKnownLocation();
+                    String distance = calculatedistance(location, user_location);
+                    //float distance = locationA.distanceTo(locationB);
+
+                    Toast.makeText(getContext(), "active is running", Toast.LENGTH_SHORT).show();
+                    active(name, distance);
+                }
 
             }
         }

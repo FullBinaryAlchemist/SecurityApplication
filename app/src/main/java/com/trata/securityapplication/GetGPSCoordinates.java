@@ -242,10 +242,26 @@ public class GetGPSCoordinates extends Service {
 
         //TODO:Complete the Call Subscribe and Unsubscribe for 8-way approach Code here
         //Example to subscribe to a single zone
-        String topic=EmergencyMessagingService.getTopicString(getZone(),getSub_zone());
-        EmergencyMessagingService.subscribeTopic(topic);
-        Log.d("Subscription","Subscribed to topic"+topic);
-        Toasty.info(getApplicationContext(),"Subscribed to topic"+topic,Toasty.LENGTH_LONG).show();
+        String topic_example=EmergencyMessagingService.getTopicString(getZone(),getSub_zone());
+        EmergencyMessagingService.subscribeTopic(topic_example);
+
+        //Unsubscribing from previous zones
+        for(int i=0;i<ZoneFetching.getCount();i++){
+            String topic=EmergencyMessagingService.getTopicString(ZoneFetching.getNewZonesList()[i],ZoneFetching.getNewSubzonesList()[i]);
+            EmergencyMessagingService.unsubscribeTopic(topic);
+            Log.d("UNSubscription","Unsubscribed from topic"+topic);
+            Toasty.info(getApplicationContext(),"Unsubscribed from topic"+topic,Toasty.LENGTH_SHORT).show();
+        }
+
+        //fetching New Zones and Subscribing to them
+        ZoneFetching.fetchAllSub(getZone(),getSub_zone());
+
+        for(int i=0;i<ZoneFetching.getCount();i++){
+            String topic=EmergencyMessagingService.getTopicString(ZoneFetching.getNewZonesList()[i],ZoneFetching.getNewSubzonesList()[i]);
+            EmergencyMessagingService.subscribeTopic(topic);
+            Log.d("Subscription","Subscribed to topic"+topic);
+            Toasty.info(getApplicationContext(),"Subscribed to topic"+topic,Toasty.LENGTH_SHORT).show();
+        }
 
     }
 
