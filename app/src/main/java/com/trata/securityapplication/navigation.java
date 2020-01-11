@@ -15,6 +15,8 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
@@ -63,7 +65,16 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
         setSupportActionBar(toolbar);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(navListner);
-
+        Intent intent=getIntent();
+        boolean saviour=intent.getBooleanExtra("saviour",false);
+        if(saviour)
+        {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_continer,new saviour_fragment()).commit();
+            bottomNav.setSelectedItemId(R.id.save);
+        }
+        else{
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_continer,new home_fragment()).commit();
+        }
         firebaseHelper = FirebaseHelper.getInstance();
         firebaseHelper.initFirebase();
         firebaseHelper.initContext(this);
@@ -142,7 +153,6 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
        // Log.d("remoteaaa","rohan"+firebaseRemoteConfig.getString("force_update_store_url"));
         ForceUpdateChecker.with(this).onUpdateNeeded(this).check();
     }
-
     private void async() {
         checkFirstSosContact();
         if(db.get_user_row().getCount()==0){
@@ -161,7 +171,7 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
 
         Log.d("Paid1234hello11","userobj"+UserObject.user.isPaid()+db.getdb_user().getName());
         Log.d("Paid1234hello111","userobj2"+UserObject.print());
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_continer,new home_fragment()).commit();
+
     }
 
 
@@ -318,7 +328,6 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
         //finishing the navigation activity
         finish();
     }
-
 
     @Override
     public void onUpdateNeeded(final String updateUrl) {

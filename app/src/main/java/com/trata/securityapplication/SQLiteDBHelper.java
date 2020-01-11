@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-
 import com.trata.securityapplication.model.User;
 
 import java.util.HashMap;
@@ -46,6 +45,8 @@ public class SQLiteDBHelper extends SQLiteOpenHelper {
                     COLUMN_TESTM + " BOOLEAN DEFAULT FALSE, "+
                     COLUMN_PAID  + " BOOLEAN DEFAULT FALSE "+")";
 
+    private static final String create_history_table="CREATE TABLE history (ID INTEGER PRIMARY KEY AUTOINCREMENT, NAME TEXT, DATE TEXT )";
+
     private static final String SOS_TABLE = "sostable";
     private static final String COLUMN_C1 = "c1";
     private static final String COLUMN_C2 = "c2";
@@ -84,6 +85,7 @@ public class SQLiteDBHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(CREATE_TABLE_QUERY);
         Log.d("SQL Query","Create sostable with query :"+CREATE_SOSTABLE_QUERY);
         sqLiteDatabase.execSQL(CREATE_SOSTABLE_QUERY);
+        sqLiteDatabase.execSQL(create_history_table);
         //sqLiteDatabase.execSQL("create table "+TABLE_NAME+" (id int , name varchar(20),location varchar(20),mobile char(10),aadhar char(12),imei varchar(10), gender Varchar(6), dob Varchar(8), email varchar(30) , password varchar(16))");
     }
 
@@ -94,7 +96,45 @@ public class SQLiteDBHelper extends SQLiteOpenHelper {
         onCreate(sqLiteDatabase);
     }
     //it return number of rows in the table
-
+//add history
+    public boolean addhistory(String name,String date){
+        try{
+      ContentValues contentValues=new ContentValues();
+      contentValues.put("NAME",name);
+      contentValues.put("DATE",date);
+     // contentValues.put("ID","null");
+        long result = db.insert("history",null, contentValues);
+        if (result == -1){
+            Log.d("Database","User object NOT ADDED");
+            return false;
+        }
+        else{
+            Log.d("Database","User object added successfully");
+            return true;
+        }
+    }catch(Exception e){
+        Log.d("SQL","Exception occurred");
+        e.printStackTrace();
+        return false;
+    }
+    }
+    //fetch history
+    public HashMap<String,String> fetch_history(){
+        HashMap<String,String> list=new HashMap<>();
+        try {
+            Cursor cursor = db.rawQuery("select * FROM history ORDER BY ID ASC", null);
+            Log.d("Paid1234hello9", "noofrow" + cursor.getCount());
+            if (cursor.getCount() > 0) {
+                while (cursor.moveToNext()) {
+                    list.put(cursor.getString(cursor.getColumnIndex("NAME")), cursor.getString(cursor.getColumnIndex("DATE")));
+                }
+            }
+            Log.d("hashmapsacin",list.toString());
+            return list;
+        }catch (Exception e){
+            return null;
+        }
+    }
     /**Adding user*/
     public boolean addUser(User user){
         Log.d("SQL12","Add User is started");

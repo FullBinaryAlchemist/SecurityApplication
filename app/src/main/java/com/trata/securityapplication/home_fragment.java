@@ -33,6 +33,7 @@ import com.google.android.gms.tasks.Task;
 import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.model.Alert;
 
+import java.text.SimpleDateFormat;
 import java.util.Objects;
 
 import es.dmoral.toasty.Toasty;
@@ -41,6 +42,7 @@ import static com.trata.securityapplication.navigation.test;
 
 public class home_fragment extends Fragment {
 
+//    private static FirebaseHelper ;
     public Button alert;
     public Button emergency;
     public Button informsafety;
@@ -142,8 +144,8 @@ public class home_fragment extends Fragment {
                     if(!test){
 
                         String formattedSubZone= GetGPSCoordinates.getFormattedZoning(GetGPSCoordinates.getSub_zone());
-                        String uid=firebaseHelper.getFirebaseAuth().getUid();
-                        String ddLastKnownLocation =GetGPSCoordinates.getddLastKnownLocation();
+                        final String uid=firebaseHelper.getFirebaseAuth().getUid();
+                        final String ddLastKnownLocation =GetGPSCoordinates.getddLastKnownLocation(); //for Location
                         Log.d("home_fragment","Emergency: formattedSubZone:"+formattedSubZone+"\nuid:"+uid+"\nlocation:"+ddLastKnownLocation);
                         alertobj= new Alert();
                         alertobj.setLocation(ddLastKnownLocation);
@@ -161,6 +163,7 @@ public class home_fragment extends Fragment {
                                 if(task.isSuccessful()){
                                     Log.d("home_fragment","Firebase:Alert added in Firebase");
                                     Toasty.success(getContext(),"Alert added in FIrebase",Toasty.LENGTH_LONG).show();
+                                    timeStamp(uid,ddLastKnownLocation);
                                 }
                                 else{
                                     Log.d("home_fragment","Firebase:Alert NOT ADDED in Firebase");
@@ -308,7 +311,14 @@ public class home_fragment extends Fragment {
         Log.i ("isMyServiceRunning?", false+"");
         return false;
     }
+    public void timeStamp(String uid,String location){
+//        String location=GetGPSCoordinates.getddLastKnownLocation();
+        Log.d("alert_history","Alert History working"+uid);
+        String ts = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
+        firebaseHelper.getUsersDatabaseReference().child(uid).child("alert_history").setValue(ts+"_"+location);
 
+
+    }
 }
 
 

@@ -29,7 +29,6 @@
         app:itemIconTint="@color/cyan"
         app:itemHorizontalTranslationEnabled="true"
         android:background="#fff"
-
         app:menu="@menu/bottom_navigation" />
 
 
