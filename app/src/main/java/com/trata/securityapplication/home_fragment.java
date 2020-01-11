@@ -128,7 +128,7 @@ public class home_fragment extends Fragment {
 
                     //Code: TO play siren and send emergency message and alert
                     //emergency.setBackgroundColor(getResources().getColor(R.drawable.buttonshape_emer));
-                    Context c2 = getContext();
+                    final Context c2 = getContext();
                     check=true;
 
                     Intent emergencyintent1=new Intent(getContext(), BackgroundSosPlayerService.class);
@@ -164,19 +164,19 @@ public class home_fragment extends Fragment {
                             public void onComplete(@NonNull Task<Void> task) {
                                 if(task.isSuccessful()){
                                     Log.d("home_fragment","Firebase:Alert added in Firebase");
-                                    Toasty.success(getContext(),"Alert added in FIrebase",Toasty.LENGTH_LONG).show();
+                                    Toasty.success(c2,"Alert added in FIrebase",Toasty.LENGTH_LONG).show();
                                     timeStamp(uid,ddLastKnownLocation);
                                 }
                                 else{
                                     Log.d("home_fragment","Firebase:Alert NOT ADDED in Firebase");
-                                    Toasty.error(getContext(), "Firebase entry failed", Toast.LENGTH_SHORT, true).show();
+                                    Toasty.error(c2, "Firebase entry failed", Toast.LENGTH_SHORT, true).show();
                                 }
                             }
                         });
                         }catch (Exception e){
                         Log.d("home_fragment","Emergency creation on firebase failed");
                         e.printStackTrace();
-                        Toasty.error(getContext(), "Emergency creation on firebase failed"+e.getMessage(), Toast.LENGTH_SHORT, true).show();
+                        Toasty.error(c2, "Emergency creation on firebase failed"+e.getMessage(), Toast.LENGTH_SHORT, true).show();
 
                         }
                     }
@@ -314,9 +314,15 @@ public class home_fragment extends Fragment {
                     public void onComplete(@NonNull Task<Void> task) {
                         if(task.isSuccessful()){
                             Log.d("home_fragment_timestamp","Firebase:TimeStamp added in Firebase");
+                            try{
                             Toasty.success(getContext(),"Alert added in FIrebase",Toasty.LENGTH_LONG).show();
+                          }
+                            catch(Exception e){
+                                Log.d("toasty",e.getMessage());
+                            }
 //                            timeStamp(uid,ddLastKnownLocation);
                         }
+
                         else{
                             Log.d("home_fragment_timestamp","Firebase:TimeStamp NOT ADDED in Firebase");
                             Toasty.error(getContext(), "Firebase entry failed", Toast.LENGTH_SHORT, true).show();
