@@ -1,5 +1,6 @@
 package com.trata.securityapplication;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -28,6 +29,7 @@ import androidx.work.WorkManager;
 public class EmergencyMessagingService extends FirebaseMessagingService {
     private static final String TAG="CloudMessagingService";
     private RemoteMessage remoteMessage;
+    private String channelId="999";
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // [START_EXCLUDE]
@@ -97,22 +99,40 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "Short lived task is done.");
 
         String keys[]= {"username","liveLocation","uid"};
+        // Check if message contains a notification payload.
+        //If it is a notification message then it contains first time alert
+        //else it is an update message so an AlertDetail must exist.So update it
+        if (remoteMessage.getNotification() != null) {
+            AlertDetails alertDetails = new AlertDetails();
 
-        AlertDetails alertDetails=new AlertDetails();
+            alertDetails.setName((String) remoteMessage.getData().get("username"));
+            alertDetails.setLocation((String) remoteMessage.getData().get("liveLocation"));
+            alertDetails.setUid((String) remoteMessage.getData().get("uid"));
+            //TODO Add imageUrl
+            for (String key : keys) {
 
-        alertDetails.setName((String)remoteMessage.getData().get("username"));
-        alertDetails.setLocation((String)remoteMessage.getData().get("liveLocation"));
-        alertDetails.setUid((String)remoteMessage.getData().get("uid"));
-        //TODO Add imageUrl
-        for (String key : keys) {
+                Object value = remoteMessage.getData().get(key);
+                Log.d(TAG, "Key: " + key + " Value: " + value);
 
-            Object value = remoteMessage.getData().get(key);
-            Log.d(TAG, "Key: " + key + " Value: " + value);
+            }
 
+            AlertObjects.setAlertDetail(alertDetails.getUid(), alertDetails);
         }
-
-        AlertObjects.setAlertDetail(alertDetails.getUid(),alertDetails);
-
+        else{
+            if(remoteMessage.getData().containsKey("saviourCount")){
+                String count=remoteMessage.getData().get("saviourCount");
+                showSaviourCountNotification(Integer.parseInt(count));
+            }
+            else
+            {
+                Log.d(TAG, "Update data message received");
+                String uid = (String) remoteMessage.getData().get("uid");
+                AlertDetails alert = AlertObjects.getAlert(uid);
+                String location = (String) remoteMessage.getData().get("liveLocation");
+                alert.setLocation(location);
+                Log.d(TAG, "Updated alert with uid:" + uid + " location:" + location);
+            }
+        }
     }
     public static void subscribeTopic(final String topic){
         FirebaseMessaging.getInstance().subscribeToTopic(topic)
@@ -177,4 +197,39 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         notificationManager.notify(0 *//* ID of notification *//*, notificationBuilder.build());
     }
 */
+
+    public  void showSaviourCountNotification(int count){
+
+        String messageBody=count+" saviours are coming to your rescue!";
+        String title="Help is on the way";
+
+        if(count==0){
+            messageBody="Alerted Saviours nearby. Stay strong !";
+        }
+
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this, channelId)
+                        .setSmallIcon(R.drawable.ic_notify)
+                        .setColor(getResources().getColor(R.color.cyan))
+                        .setPriority(Notification.PRIORITY_HIGH)
+                        .setContentTitle(title)
+                        .setContentText(messageBody)
+                        .setOngoing(true);
+
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Since android Oreo notification channel is needed.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(channelId,
+                    "Saviours to rescue",
+                    NotificationManager.IMPORTANCE_HIGH);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        notificationManager.notify(999, notificationBuilder.build());
+
+    }
 }
