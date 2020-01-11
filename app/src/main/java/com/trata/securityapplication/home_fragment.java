@@ -17,6 +17,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
@@ -29,10 +30,14 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.model.Alert;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Objects;
 
 import es.dmoral.toasty.Toasty;
@@ -150,6 +155,7 @@ public class home_fragment extends Fragment {
                         alertobj.setSubzone(formattedSubZone);
 
                         //TODO:check whether an Emergency has already been raised by User. If there already exists then don't create another entry
+                        exists(uid);
 
                         try {
                         firebaseHelper.getAlertsDatabaseReference().child(uid).setValue(alertobj)
@@ -298,13 +304,48 @@ public class home_fragment extends Fragment {
     }
     public void timeStamp(String uid,String location){
 //        String location=GetGPSCoordinates.getddLastKnownLocation();
-        Log.d("alert_history","Alert History working"+uid);
+        Log.d("alert_history","Alert History working    "+uid);
         String ts = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
-        firebaseHelper.getUsersDatabaseReference().child(uid).child("alert_history").setValue(ts+"_"+location);
+        ts= TextUtils.join(":", Arrays.asList(ts.split("\\.")));
 
+        firebaseHelper.getUsersDatabaseReference().child(uid).child("alert_history").child(ts).setValue(location)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if(task.isSuccessful()){
+                            Log.d("home_fragment_timestamp","Firebase:TimeStamp added in Firebase");
+                            Toasty.success(getContext(),"Alert added in FIrebase",Toasty.LENGTH_LONG).show();
+//                            timeStamp(uid,ddLastKnownLocation);
+                        }
+                        else{
+                            Log.d("home_fragment_timestamp","Firebase:TimeStamp NOT ADDED in Firebase");
+                            Toasty.error(getContext(), "Firebase entry failed", Toast.LENGTH_SHORT, true).show();
+                        }
+                    }
+                });
+        ;
+    }
+
+    public void exists(String uid){
+        firebaseHelper.getAlertsDatabaseReference().child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if (dataSnapshot.exists()) {
+                    Log.d("Exists", "Return True");
+                } else {
+                    Log.d("Not Exists", "Return False");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
     }
 }
-
 
 
