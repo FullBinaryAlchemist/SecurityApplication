@@ -58,4 +58,19 @@ public class ZoneFetching {
 
         }
     }
+
+    //converts
+    public static String getProperSubzone( String subzone){
+        String splitsub[]=subzone.split(",");
+        int subzones[]=new int[2];
+        for(int i=0;i<splitsub.length;i++){
+            subzones[i]=Integer.parseInt(subzone.split(",")[i]);
+
+            if(subzones[i]%2!=0){
+                subzones[i]-=1;
+            }
+        }
+
+        return subzones[0]+","+subzones[1];
+    }
 }
