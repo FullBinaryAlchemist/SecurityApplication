@@ -3,6 +3,7 @@ package com.trata.securityapplication;
 import android.annotation.SuppressLint;
 import android.Manifest;
 import android.app.ActivityManager;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -146,6 +147,7 @@ public class home_fragment extends Fragment {
 
                     //check if not test mode.Otherwise don't raise entry on firebase
                     if(!test){
+
                         String formattedSubZone= GetGPSCoordinates.getFormattedZoning(GetGPSCoordinates.getSub_zone());
                         final String uid=firebaseHelper.getFirebaseAuth().getUid();
                         final String ddLastKnownLocation =GetGPSCoordinates.getddLastKnownLocation(); //for Location
@@ -153,7 +155,9 @@ public class home_fragment extends Fragment {
                         alertobj= new Alert();
                         alertobj.setLocation(ddLastKnownLocation);
                         alertobj.setSubzone(formattedSubZone);
-
+                        //Temporary code to test saviours live location update
+                        EmergencyMessagingService.subscribeTopic("saviours_"+uid); //TODO:Remove after Saviour fragment complete
+                        EmergencyMessagingService.subscribeTopic("victim_"+uid);
                         //TODO:check whether an Emergency has already been raised by User. If there already exists then don't create another entry
                         exists(uid);
 
@@ -209,6 +213,17 @@ public class home_fragment extends Fragment {
             public void onClick(View v) {
                 Animation inf_anim=AnimationUtils.loadAnimation(getContext(),R.anim.btn_anim);
                 informsafety.startAnimation(inf_anim);
+
+                //unsubscribe after inform safety has been pressed. This way Saviour count will no longer be received. So notification will be cancelled
+                String uid=firebaseHelper.getFirebaseAuth().getUid();
+                EmergencyMessagingService.unsubscribeTopic("victim_"+uid);
+                NotificationManager notificationManager =
+                        (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(999); //Cancelling the SaviourCount notification
+
+                //TODO:check if Alert node exists and it does then delete it and update History of the usr
+
+
                 try {
 
                     if (SendSMSService.getAlert() == 0 && SendSMSService.getEmergency() == 0) {
