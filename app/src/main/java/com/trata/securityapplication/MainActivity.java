@@ -249,10 +249,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
         EmergencyMessagingService.subscribeTopic("alerts_72_19_24_34");
         startService(new Intent(this,EmergencyMessagingService.class));
-        //TODO:Redirect the user to saviour fragment:Completed just remove comment
-//        Intent intent=new Intent(MainActivity.this,navigation.class);
-//        intent.putExtra("saviour",true);
-//        startActivity(intent);
+
 
         //Handles the data received when Emergency Notification is clicked
         if (getIntent().getExtras() != null) {
@@ -276,6 +273,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             AlertObjects.setAlertDetail(alertDetails.getUid(),alertDetails);
             //navigate to Saviour Fragment
+            //TODO:Redirect the user to saviour fragment:Completed just remove comment
+            if(getIntent().getExtras().containsKey("username")) {
+                Toast.makeText(this, "putextra", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, navigation.class);
+                intent.putExtra("saviour", true);
+                startActivity(intent);
+                finish();
+            }
+            else
+                Log.d(TAG,"userkname not exists");
         }
     }
 
