@@ -39,7 +39,7 @@ import java.util.TimerTask;
 import es.dmoral.toasty.Toasty;
 
 public class recent_cards extends AppCompatActivity {
-    private static final String TAG = "HereMaps";
+    private static final String TAG = "RecentCards";
     private MapViewLite mapView;
     // private MapStyle mapStyle;
     Context context = this;
@@ -54,10 +54,12 @@ public class recent_cards extends AppCompatActivity {
     private Routing routing;
     Timer timer = new Timer();
     public static void setLatitude(double latitude) {
+        Log.d(TAG,"setLatitude:"+latitude);
         alertLatitude = latitude;
     }
 
     public static void setLongitude(double longitude) {
+        Log.d(TAG,"setlongitude:"+longitude);
         alertLongitude = longitude;
     }
 
