@@ -754,8 +754,7 @@ public class profile_fragment extends Fragment {
             Intent MStopGPSService = new Intent(getContext(),GetGPSCoordinates.class);
             getActivity().stopService(MStopGPSService);
             Log.d("Profile Fragment","GPS Service Stopped");
-            //Toasty.warning(getContext(), "Services Stopped", Toast.LENGTH_SHORT, true).show(); //TODO:Remove toasty
-
+            //Toasty.warning(getContext(), "Services Stopped", Toast.LENGTH_SHORT, true).show();
             // Toast.makeText(getContext(),"Service sosplayer stopping...",Toast.LENGTH_SHORT).show();
         }
         catch(Exception e) {

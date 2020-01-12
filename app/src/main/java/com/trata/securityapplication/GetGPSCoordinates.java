@@ -250,7 +250,7 @@ public class GetGPSCoordinates extends Service {
             String topic=EmergencyMessagingService.getTopicString(ZoneFetching.getNewZonesList()[i],ZoneFetching.getNewSubzonesList()[i]);
             EmergencyMessagingService.unsubscribeTopic(topic);
             Log.d("UNSubscription","Unsubscribed from topic"+topic);
-            Toasty.info(getApplicationContext(),"Unsubscribed from topic"+topic,Toasty.LENGTH_SHORT).show();
+            //Toasty.info(getApplicationContext(),"Unsubscribed from topic"+topic,Toasty.LENGTH_SHORT).show();
         }
 
         //fetching New Zones and Subscribing to them
@@ -260,7 +260,7 @@ public class GetGPSCoordinates extends Service {
             String topic=EmergencyMessagingService.getTopicString(ZoneFetching.getNewZonesList()[i],ZoneFetching.getNewSubzonesList()[i]);
             EmergencyMessagingService.subscribeTopic(topic);
             Log.d("Subscription","Subscribed to topic"+topic);
-            Toasty.info(getApplicationContext(),"Subscribed to topic"+topic,Toasty.LENGTH_SHORT).show();
+            //Toasty.info(getApplicationContext(),"Subscribed to topic"+topic,Toasty.LENGTH_SHORT).show();
         }
 
     }
