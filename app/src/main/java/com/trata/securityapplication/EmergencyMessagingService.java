@@ -48,7 +48,6 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         // messages. For more see: https://firebase.google.com/docs/cloud-messaging/concept-options
         // [END_EXCLUDE]
 
-        // TODO(developer): Handle FCM messages here.
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
         this.remoteMessage= remoteMessage;
         Log.d(TAG, "From: " + remoteMessage.getFrom());
@@ -81,7 +80,6 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         super.onNewToken(s);
     }
 
-    //TODO:Here the main logic for showing saviour fragment will come
 /*
     private void scheduleJob() {
         // [START dispatch_job]
@@ -108,14 +106,13 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
             alertDetails.setName((String) remoteMessage.getData().get("username"));
             alertDetails.setLocation((String) remoteMessage.getData().get("liveLocation"));
             alertDetails.setUid((String) remoteMessage.getData().get("uid"));
-            //TODO Add imageUrl
             for (String key : keys) {
 
                 Object value = remoteMessage.getData().get(key);
                 Log.d(TAG, "Key: " + key + " Value: " + value);
 
             }
-
+            //TODO:check if victim uid same as user uid. In that case don't add to AlertObject
             AlertObjects.setAlertDetail(alertDetails.getUid(), alertDetails);
         }
         else{
