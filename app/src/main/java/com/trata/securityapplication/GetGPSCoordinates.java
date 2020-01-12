@@ -315,7 +315,7 @@ public class GetGPSCoordinates extends Service {
     //To increase the frequency of location request.
     public static void speedyLocationRequest(){
         locationRequest.setInterval(locationreq_speedy);
-        locationRequest.setFastestInterval(locationreq_fastest);
+        locationRequest.setFastestInterval(locationreq_speedy);
         requestLocationUpdates();
         Log.d("GPS Service","speedyLocationRequest : speedy interval set to "+locationreq_speedy);
     }
