@@ -80,7 +80,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         super.onNewToken(s);
     }
 
-
+/*
     private void scheduleJob() {
         // [START dispatch_job]
         OneTimeWorkRequest work = new OneTimeWorkRequest.Builder(MyWorker.class)
