@@ -1,6 +1,7 @@
 package com.trata.securityapplication;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,12 +20,16 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.trata.securityapplication.Helper.FirebaseHelper;
+import com.trata.securityapplication.model.AlertDetails;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class saviour_fragment extends Fragment {
     private RecyclerView mRecyclerView,mRecyclerView2;
@@ -36,6 +41,7 @@ public class saviour_fragment extends Fragment {
     SQLiteDBHelper mydb = SQLiteDBHelper.getInstance(getContext());
     final ArrayList<exampleitem> exampleList = new ArrayList<>();
     ArrayList<exampleitem> exampleList2 = new ArrayList<>();
+    List<String> user_list = new ArrayList<>();
 
     @Nullable
     @Override
@@ -43,6 +49,21 @@ public class saviour_fragment extends Fragment {
         return inflater.inflate(R.layout.fragment_saviour,container,false);
     }
 
+    private String calculatedistance(String location,String user_location){
+        List<String> t_loc = Arrays.asList(location.split(","));
+        List<String> u_loc = Arrays.asList(user_location.split(","));
+        Log.d("userLocation",user_location);
+        Log.d("userLocation2",location);
+        Log.d("userLocation3",u_loc.toString());
+        Location targetLocation = new Location("");//provider name is unnecessary
+        targetLocation.setLatitude(Double.valueOf(t_loc.get(0)));//your coords of course
+        targetLocation.setLongitude(Double.valueOf(t_loc.get(1)));
+        Location myLocation = new Location("");//provider name is unnecessary
+        myLocation.setLatitude(Double.valueOf(u_loc.get(0)));//your coords of course
+        myLocation.setLongitude(Double.valueOf(u_loc.get(1)));
+        float distanceInMeters =  targetLocation.distanceTo(myLocation);
+        return String.valueOf((int) distanceInMeters);
+    }
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -50,8 +71,30 @@ public class saviour_fragment extends Fragment {
         mRecyclerView = getActivity().findViewById(R.id.recyclerView);
         m1=getActivity().findViewById(R.id.card_view);
         m2=getActivity().findViewById(R.id.card_view2);
+        HashMap<String, AlertDetails> detail=AlertObjects.getAllAlerts();
+        Toast.makeText(getContext(), detail.toString(), Toast.LENGTH_SHORT).show();
+        Set<String> key_set=detail.keySet();
+
+        if(key_set.size()>0){
+            for(String key:key_set){
+                AlertDetails ad=detail.get(key);
+                String name=ad.getName();
+                String uid=ad.getUid();
+                if(name!=null) {
+                    String location = ad.getLocation();
+                    String user_location = GetGPSCoordinates.getddLastKnownLocation();
+                    String distance = calculatedistance(location, user_location);
+                    //float distance = locationA.distanceTo(locationB);
+                    Toast.makeText(getContext(), "active is running", Toast.LENGTH_SHORT).show();
+                    user_list.add(key);
+                    active(name, distance);
+                }
+
+            }
+        }
   //add user here for active alerts
-       active("sachin2 sav","5");
+
+
 
 
 if(exampleList.size()==0) {
@@ -84,7 +127,7 @@ if(exampleList.size()==0) {
                 Toast.makeText(getContext(), "Item "+ position +" is clicked", Toast.LENGTH_SHORT).show();
                 Intent intent=new Intent(getContext(),recent_cards.class);
                 history.exampleList=exampleList;
-                intent.putExtra("position",position);
+                intent.putExtra("uid",user_list.get(position));
                 startActivity(intent);
             }
         });
@@ -106,12 +149,13 @@ if(exampleList.size()==0) {
 
     private void active(String name, String distance) {
         exampleList.add(new exampleitem(name, "Distance: "+distance+" miter"));
+    }
+    private void store(String name){
         Date date = new Date();
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         String strDate= formatter.format(date);
         mydb.addhistory(name,strDate);
         update_firebase(name,strDate);
-
     }
 
     private void update_firebase(String name, String strDate) {

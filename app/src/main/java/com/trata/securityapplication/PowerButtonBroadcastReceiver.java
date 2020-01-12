@@ -12,7 +12,6 @@ public class PowerButtonBroadcastReceiver extends BroadcastReceiver {
     private static long lastcall;
     @Override
     public void onReceive(Context context, Intent intent) {
-        // TODO: This method is called when the BroadcastReceiver is receiving
         // an Intent broadcast.
         Log.d(TAG,"onReceive with count:"+count);
 

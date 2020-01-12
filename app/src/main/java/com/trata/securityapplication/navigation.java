@@ -1,10 +1,13 @@
 package com.trata.securityapplication;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.graphics.Color;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
@@ -15,6 +18,8 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
@@ -58,12 +63,24 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
+
+        //check the Location Access setting state
+        checkLocationAccess();
         db=SQLiteDBHelper.getInstance(navigation.this);
         Toolbar toolbar=findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnNavigationItemSelectedListener(navListner);
-
+        Intent intent=getIntent();
+        boolean saviour=intent.getBooleanExtra("saviour",false);
+        if(saviour)
+        {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_continer,new saviour_fragment()).commit();
+            bottomNav.setSelectedItemId(R.id.save);
+        }
+        else{
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_continer,new home_fragment()).commit();
+        }
         firebaseHelper = FirebaseHelper.getInstance();
         firebaseHelper.initFirebase();
         firebaseHelper.initContext(this);
@@ -142,7 +159,6 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
        // Log.d("remoteaaa","rohan"+firebaseRemoteConfig.getString("force_update_store_url"));
         ForceUpdateChecker.with(this).onUpdateNeeded(this).check();
     }
-
     private void async() {
         checkFirstSosContact();
         if(db.get_user_row().getCount()==0){
@@ -161,7 +177,7 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
 
         Log.d("Paid1234hello11","userobj"+UserObject.user.isPaid()+db.getdb_user().getName());
         Log.d("Paid1234hello111","userobj2"+UserObject.print());
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_continer,new home_fragment()).commit();
+
     }
 
 
@@ -319,7 +335,6 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
         finish();
     }
 
-
     @Override
     public void onUpdateNeeded(final String updateUrl) {
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -348,6 +363,40 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
         startActivity(intent);
     }
 
+    //Method to check the LocationAccess state of user's device
+    private void checkLocationAccess() {
+        LocationManager locationManager = (LocationManager)getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+
+        try {
+            gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch(Exception ex) {}
+
+        try {
+            network_enabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch(Exception ex) {}
+
+        if(!gps_enabled && !network_enabled) {
+            // notify user
+            ShowDialog();
+        }
+    }
+    //display a dialog to user.
+    private void ShowDialog() {
+        new android.app.AlertDialog.Builder(this)
+                .setMessage(R.string.dialog_message)
+                .setPositiveButton(R.string.okay, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                        //context.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(i);
+                    }
+                })
+                .setCancelable(false)
+                .show();
+    }
 
 }
-
