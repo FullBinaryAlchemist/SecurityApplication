@@ -5,15 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.mapviewlite.MapImage;
@@ -23,12 +27,16 @@ import com.here.sdk.mapviewlite.MapMarkerImageStyle;
 import com.here.sdk.mapviewlite.MapScene;
 import com.here.sdk.mapviewlite.MapStyle;
 import com.here.sdk.mapviewlite.MapViewLite;
+import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.model.AlertDetails;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import es.dmoral.toasty.Toasty;
 
 public class recent_cards extends AppCompatActivity {
     private static final String TAG = "HereMaps";
@@ -78,7 +86,61 @@ public class recent_cards extends AppCompatActivity {
 
             }
         }, 3000);
+
+        /**Setting Event listeners for accept and reject **/
+        Button accept= findViewById(R.id.accept);
+        Button decline= findViewById(R.id.decline);
+
+        accept.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addSaviourToAlert(ad.getUid());
+                EmergencyMessagingService.subscribeTopic("saviours_"+ad.getUid()); //subscribing to topic saviours_#uidVictim to receive live location updates
+                //TODO:Remove reject option and updateUI
+            }
+        });
+        //TODO: Remove the alertDetail object and key from AlertObjects . Update the history of the user on firebase and in local database
+        decline.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EmergencyMessagingService.unsubscribeTopic("saviours_"+ad.getUid()); //in-case the user got subscribed to topic->unsubscribe them
+                //removing the AlertDetail object form AlertObjects
+                AlertObjects.getAllAlerts().remove(uid);
+                Log.d("saviour"," Alert#"+uid+" was removed from the alerts hashmap");
+                //update history
+
+                //close this activity and recycler view should be updated
+                finish();
+
+            }
+        });
     }
+    //adds Saviour to alerts/{uid}/saviours node on Firebase
+    public void addSaviourToAlert(final String uid /*Victim uid*/){
+        String ts = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());//timestamp at which request is accepted
+        String useruid= FirebaseHelper.getInstance().getFirebaseAuth().getUid();//Gets current user uid
+        FirebaseHelper.getInstance().getAlertsDatabaseReference().child(uid).child("saviours").child(useruid).setValue(ts)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if(task.isSuccessful()){
+                            Log.d("Saviour","Saviour added to firebase for alert uid#"+uid);
+                            try{
+                                Toasty.success(getApplicationContext(),"Saviour added to firebase for alert uid#"+uid,Toasty.LENGTH_LONG).show();
+                            }
+                            catch(Exception e){
+                                Log.d("toasty",e.getMessage());
+                            }
+                        }
+
+                        else{
+                            Log.d("Saviour","Saviour NOT added to firebase for alert Uid#"+uid);
+                            Toasty.error(getApplicationContext(), "Saviour NOT added to firebase for alert Uid#"+uid, Toast.LENGTH_SHORT, true).show();
+                        }
+                    }
+                });
+    }
+
     void checkGPSPermission() {
         Log.d("MainActivity", "Inside CheckGPSPermission");
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {   //permissions not granted
@@ -131,6 +193,8 @@ public class recent_cards extends AppCompatActivity {
                     TimerTask task = new TimerTask() {
                         @Override
                         public void run() {
+                            //TODO:update geoCoordinates for victim and saviour and
+                            // Fetch the image of victim if distance is less than 100m and UpdateUI
                             Log.d("run","loading Map Scene");
                             loadMarker(mapMarkerImageStyle);
                         }
