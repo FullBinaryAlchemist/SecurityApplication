@@ -603,7 +603,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             pgbarhide();
         }
         else {
-            Log.d("MainActivty","Inside UpdateUI GPS Permission = "+checkGPSPermission());
+            Log.d("MainActivty","Inside UpdateUI ");
             if (db.getdb_user().getImei() == null){
                 firebaseHelper.firebaseSignOut(mImeiNumber);
                 firebaseHelper.googleSignOut(MainActivity.this);
@@ -1007,5 +1007,4 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         return false;
     }
-
 }

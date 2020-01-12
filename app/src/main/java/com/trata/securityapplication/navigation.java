@@ -1,10 +1,13 @@
 package com.trata.securityapplication;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.graphics.Color;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
@@ -60,6 +63,9 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
+
+        //check the Location Access setting state
+        checkLocationAccess();
         db=SQLiteDBHelper.getInstance(navigation.this);
         Toolbar toolbar=findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -357,6 +363,40 @@ public class navigation extends AppCompatActivity implements ForceUpdateChecker.
         startActivity(intent);
     }
 
+    //Method to check the LocationAccess state of user's device
+    private void checkLocationAccess() {
+        LocationManager locationManager = (LocationManager)getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+
+        try {
+            gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch(Exception ex) {}
+
+        try {
+            network_enabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch(Exception ex) {}
+
+        if(!gps_enabled && !network_enabled) {
+            // notify user
+            ShowDialog();
+        }
+    }
+    //display a dialog to user.
+    private void ShowDialog() {
+        new android.app.AlertDialog.Builder(this)
+                .setMessage(R.string.dialog_message)
+                .setPositiveButton(R.string.okay, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                        //context.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(i);
+                    }
+                })
+                .setCancelable(false)
+                .show();
+    }
 
 }
-
