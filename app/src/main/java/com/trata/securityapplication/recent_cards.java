@@ -32,6 +32,7 @@ import com.trata.securityapplication.model.AlertDetails;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -46,7 +47,7 @@ public class recent_cards extends AppCompatActivity {
     private TextView name;
     public static double alertLongitude;
     public static double alertLatitude;
-
+    SQLiteDBHelper mydb = SQLiteDBHelper.getInstance(this);
     GeoCoordinates geoCoordinatesAlert;
     GeoCoordinates geoCoordinatesSaviour;
 
@@ -101,7 +102,7 @@ public class recent_cards extends AppCompatActivity {
                 //TODO:Remove reject option and updateUI
             }
         });
-        //TODO: Remove the alertDetail object and key from AlertObjects . Update the history of the user on firebase and in local database
+        //TODO: Remove the alertDetail object and key from AlertObjects . Update the history of the user on firebase and in local database:SEEN
         decline.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -110,8 +111,15 @@ public class recent_cards extends AppCompatActivity {
                 AlertObjects.getAllAlerts().remove(uid);
                 Log.d("saviour"," Alert#"+uid+" was removed from the alerts hashmap");
                 //update history
-
+                Date date = new Date();
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+                String strDate= formatter.format(date);
+                mydb.addhistory(ad.getName(),strDate);
                 //close this activity and recycler view should be updated
+                Intent intent=new Intent(recent_cards.this,navigation.class);
+                intent.putExtra("saviour",true);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
                 finish();
 
             }
