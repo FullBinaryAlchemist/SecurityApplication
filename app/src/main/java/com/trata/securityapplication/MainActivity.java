@@ -229,60 +229,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //uncomment to force delete database NOTE:Recomment after uncommenting oncce
         //db.deleteDatabase(this);
 
-        //TODO:Move to updateUI
-        FirebaseInstanceId.getInstance().getInstanceId()
-                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
-                        if (!task.isSuccessful()) {
-                            Log.w(TAG, "getInstanceId failed", task.getException());
-                            return;
-                        }
 
-                        // Get new Instance ID token
-                        String token = task.getResult().getToken();
-
-                        // Log and toast
-                        String msg = getString(R.string.msg_token_fmt, token);
-                        Log.d(TAG, msg);
-                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-                    }
-                });
-        startService(new Intent(this,EmergencyMessagingService.class));
         //NOTE:Removed default subscription
 
-        //TODO:check if User is logged in
-        //Handles the data received when Emergency Notification is clicked
-        if (getIntent().getExtras() != null) {
+        //checks if User is logged in
+        if(user!=null){
+            //Handles the data received when Emergency Notification is clicked
+            if (getIntent().getExtras() != null) {
 
-            Log.d(TAG+"NotificationReceived","Inside getIntent extras");
+                Log.d(TAG+"NotificationReceived","Inside getIntent extras");
 
-            String keys[]= {"username","liveLocation","uid"};
+                String keys[]= {"username","liveLocation","uid"};
 
-            AlertDetails alertDetails=new AlertDetails();
+                AlertDetails alertDetails=new AlertDetails();
 
-            alertDetails.setName((String)getIntent().getExtras().get("username"));
-            alertDetails.setLocation((String)getIntent().getExtras().get("liveLocation"));
-            alertDetails.setUid((String)getIntent().getExtras().get("uid"));
-            //TODO Add imageUrl
-            for (String key : getIntent().getExtras().keySet()) {
+                alertDetails.setName((String)getIntent().getExtras().get("username"));
+                alertDetails.setLocation((String)getIntent().getExtras().get("liveLocation"));
+                alertDetails.setUid((String)getIntent().getExtras().get("uid"));
+                //TODO Add imageUrl
+                for (String key : getIntent().getExtras().keySet()) {
 
-                Object value = getIntent().getExtras().get(key);
-                Log.d(TAG, "Key: " + key + " Value: " + value);
+                    Object value = getIntent().getExtras().get(key);
+                    Log.d(TAG, "Key: " + key + " Value: " + value);
 
+                }
+
+                AlertObjects.setAlertDetail(alertDetails.getUid(),alertDetails);
+                //navigate to Saviour Fragment
+                if(getIntent().getExtras().containsKey("username")) {
+                    Toast.makeText(this, "putextra", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MainActivity.this, navigation.class);
+                    intent.putExtra("saviour", true);
+                    startActivity(intent);
+                    finish();
+                }
+                else
+                    Log.d(TAG,"username not exists");
             }
-
-            AlertObjects.setAlertDetail(alertDetails.getUid(),alertDetails);
-            //navigate to Saviour Fragment
-            if(getIntent().getExtras().containsKey("username")) {
-                Toast.makeText(this, "putextra", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(MainActivity.this, navigation.class);
-                intent.putExtra("saviour", true);
-                startActivity(intent);
-                finish();
-            }
-            else
-                Log.d(TAG,"username not exists");
         }
     }
 
@@ -630,6 +613,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             Log.d(TAG,"current user"+firebaseUser.getEmail());
             //goto next activity only if user exists in firebase db
+
+            /**FirebaseCloudMessaging Service**/
+            FirebaseInstanceId.getInstance().getInstanceId()
+                    .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                            if (!task.isSuccessful()) {
+                                Log.w(TAG, "getInstanceId failed", task.getException());
+                                return;
+                            }
+
+                            // Get new Instance ID token
+                            String token = task.getResult().getToken();
+
+                            // Log and toast
+                            String msg = getString(R.string.msg_token_fmt, token);
+                            Log.d(TAG, msg);
+                            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+            startService(new Intent(this,EmergencyMessagingService.class));
+
             /** SosPlayer Service intent**/
             startService(new Intent(this, SosPlayer.class));
 
