@@ -253,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.d(TAG, "Key: " + key + " Value: " + value);
 
                 }
-
+                //TODO:check if victim uid same as user uid. In that case don't add to AlertObject
                 AlertObjects.setAlertDetail(alertDetails.getUid(),alertDetails);
                 //navigate to Saviour Fragment
                 if(getIntent().getExtras().containsKey("username")) {
