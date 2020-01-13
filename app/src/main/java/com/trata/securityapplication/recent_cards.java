@@ -75,7 +75,7 @@ public class recent_cards extends AppCompatActivity {
         Log.d("victimLocation","---"+victimLocation);
         /** Get a MapViewLite instance from the layout.*/
         mapView = findViewById(R.id.map_view);
-        //name = findViewById(R.id.name);
+        name = findViewById(R.id.name);
         mapView.onCreate(savedInstanceState);
         name.setText(ad.getName());
         checkGPSPermission();
@@ -239,10 +239,11 @@ public class recent_cards extends AppCompatActivity {
         mapMarkerSaviour.addImage(mapImageSaviour, mapMarkerImageStyle);
         mapView.getMapScene().addMapMarker(mapMarkerSaviour);
 
+        routing.addRoute(geoCoordinatesAlert,geoCoordinatesSaviour);
 
     }
     /**Loads the Route between given co-ordinates*/
-    public void addRouteButtonClicked(View view) {
+ /**   public void addRouteButtonClicked(View view) {
         routing.addRoute(geoCoordinatesAlert,geoCoordinatesSaviour);
 
     }
@@ -275,6 +276,11 @@ public class recent_cards extends AppCompatActivity {
         //Update geocordinatesalert object
         String victimLocation = location;
         Log.d("updateLocation","victimLocation"+victimLocation);
+        String[] victimCoordinates = victimLocation.split(",");
+         victimLatitude = Double.parseDouble(victimCoordinates[0]);
+         victimLongitude = Double.parseDouble(victimCoordinates[1]);
+        geoCoordinatesAlert = new GeoCoordinates(victimLatitude,victimLongitude);
+        Log.d("updateLocation","geoCoordinatesAlert"+geoCoordinatesAlert);
         //Update geocoordinatessaviour object
 
         geoCoordinatesSaviour = new GeoCoordinates(saviourLatitude, saviourLongitude);
