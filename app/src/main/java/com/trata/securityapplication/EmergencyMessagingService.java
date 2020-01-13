@@ -10,7 +10,9 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -25,6 +27,7 @@ import com.trata.securityapplication.model.AlertDetails;
 
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
+import es.dmoral.toasty.Toasty;
 
 public class EmergencyMessagingService extends FirebaseMessagingService {
     private static final String TAG="CloudMessagingService";
@@ -53,28 +56,60 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
         // Check if message contains a data payload.
-        if (remoteMessage.getData().size() > 0) {
-            Log.d(TAG, "Message data payload: " + remoteMessage.getData());
+        try {
+            if (remoteMessage.getData().size() > 0) {
+                Log.d(TAG, "Message data payload: " + remoteMessage.getData());
 
-            if (/* Check if data needs to be processed by long running job */ !true) {
-                // For long-running tasks (10 seconds or more) use WorkManager.
-               // scheduleJob();
-            } else {
-                // Handle message within 10 seconds
-                handleNow();
+                if (/* Check if data needs to be processed by long running job */ !true) {
+                    // For long-running tasks (10 seconds or more) use WorkManager.
+                    // scheduleJob();
+                } else {
+                    // Handle message within 10 seconds
+                    handleNow();
+                }
+                showToast();
             }
-
+        }catch(Exception e){
+            e.printStackTrace();
+            Log.d(TAG,"Error occured inside onMessageReceived:"+e.getMessage());
         }
 
         // Check if message contains a notification payload.
-        if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
-        }
+
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
     }
+    public void showToast(){
+        Handler handler=new Handler(getApplication().getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
 
+                if (remoteMessage.getNotification() != null) {
+                    Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
+
+                    Toasty.warning(getBaseContext(),"An alert came.Please check Saviours tab",Toasty.LENGTH_LONG).show();
+                }
+                else{ //added new toasts
+                    if(remoteMessage.getData().containsKey("safe")){
+                        String username=(String) remoteMessage.getData().get("username");
+                        Toasty.success(getBaseContext(),username+"is now safe.Thanks for your help!",Toasty.LENGTH_LONG).show();
+                    }
+                    else
+                    {
+
+                        String uid = (String) remoteMessage.getData().get("uid");
+                        Toast.makeText(getApplicationContext(),"Location updates were received. For uid:"+uid,Toast.LENGTH_LONG).show();//TODO:remove toast
+
+                    }
+                }
+
+            }
+        });
+
+
+    }
     @Override
     public void onNewToken(String s) {
         super.onNewToken(s);
@@ -100,7 +135,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         // Check if message contains a notification payload.
         //If it is a notification message then it contains first time alert
         //else it is an update message so an AlertDetail must exist.So update it
-        if (remoteMessage.getNotification() != null) {
+        if (remoteMessage.getNotification() != null && !remoteMessage.getData().containsKey("safe")) {
             AlertDetails alertDetails = new AlertDetails();
 
             alertDetails.setName((String) remoteMessage.getData().get("username"));
@@ -114,11 +149,20 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
             }
             //TODO:check if victim uid same as user uid. In that case don't add to AlertObject
             AlertObjects.setAlertDetail(alertDetails.getUid(), alertDetails);
+
         }
         else{
             if(remoteMessage.getData().containsKey("saviourCount")){
                 String count=remoteMessage.getData().get("saviourCount");
                 showSaviourCountNotification(Integer.parseInt(count));
+            }
+            else if(remoteMessage.getData().containsKey("safe")){
+                Log.d(TAG,"Safety message received");
+                //removing the alert object
+                String uid = (String) remoteMessage.getData().get("uid");
+                String username=(String) remoteMessage.getData().get("username");
+                AlertObjects.getAllAlerts().remove(uid);
+                //TODO:redirect to saviours fragment and update recycler view and history
             }
             else
             {
@@ -128,6 +172,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
                 String location = (String) remoteMessage.getData().get("liveLocation");
                 alert.setLocation(location);
                 Log.d(TAG, "Updated alert with uid:" + uid + " location:" + location);
+
             }
         }
     }
