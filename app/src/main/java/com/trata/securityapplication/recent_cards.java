@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,7 +52,8 @@ public class recent_cards extends AppCompatActivity {
     SQLiteDBHelper mydb = SQLiteDBHelper.getInstance(this);
     GeoCoordinates geoCoordinatesAlert;
     GeoCoordinates geoCoordinatesSaviour;
-
+    LinearLayout linearLayout;
+    BottomSheetBehavior bottomSheetBehavior;
     String zone,sub_zone;
     private Routing routing;
     Timer timer = new Timer();
@@ -69,10 +72,50 @@ public class recent_cards extends AppCompatActivity {
         overridePendingTransition( R.anim.slide_in_up, R.anim.slide_out_up );
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recent_cards);
+        View nestedScrollView = (View) findViewById(R.id.nestedScrollView);
+        bottomSheetBehavior = BottomSheetBehavior.from(nestedScrollView);
         String uid=getIntent().getStringExtra("uid");
         HashMap<String, AlertDetails> detail=AlertObjects.getAllAlerts();
         AlertDetails ad=detail.get(uid);
+        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                String state = "";
 
+                switch (newState) {
+                    case BottomSheetBehavior.STATE_DRAGGING: {
+                        state = "DRAGGING";
+                        break;
+                    }
+                    case BottomSheetBehavior.STATE_SETTLING: {
+                        state = "SETTLING";
+                        break;
+                    }
+                    case BottomSheetBehavior.STATE_EXPANDED: {
+                        state = "EXPANDED";
+                        break;
+                    }
+                    case BottomSheetBehavior.STATE_COLLAPSED: {
+                        state = "COLLAPSED";
+                        break;
+                    }
+                    case BottomSheetBehavior.STATE_HIDDEN: {
+                        state = "HIDDEN";
+
+                        break;
+                    }
+                }
+
+                Log.d("bottomsachin",state);
+                if(state.equals("COLLAPSED"))
+                    bottomSheetBehavior.setPeekHeight(140);
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                Log.d("bottomsachin","onslide");
+            }
+        });
         /** Get a MapViewLite instance from the layout.*/
         mapView = findViewById(R.id.map_view);
         name = findViewById(R.id.name);
@@ -97,6 +140,7 @@ public class recent_cards extends AppCompatActivity {
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 addSaviourToAlert(ad.getUid());
                 EmergencyMessagingService.subscribeTopic("saviours_"+ad.getUid()); //subscribing to topic saviours_#uidVictim to receive live location updates
                 //TODO:Remove reject option and updateUI
