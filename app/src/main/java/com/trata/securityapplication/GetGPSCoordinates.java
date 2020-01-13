@@ -129,8 +129,7 @@ public class GetGPSCoordinates extends Service {
                         if (location != null) {
                             GetGPSCoordinates.ddLastKnownLocation=location.getLatitude()+","+ location.getLongitude();
                             //NOTE: was earlier MapsActivity which isn't being used anymore
-                            recent_cards.setLatitude(location.getLatitude());
-                            recent_cards.setLongitude(location.getLongitude());
+                            recent_cards.setSaviourLocation(location.getLatitude(),location.getLongitude());
                             GetGPSCoordinates.lastKnownLocation = ddToDms(location.getLatitude(), location.getLongitude());
 
                             Log.d("GPS Service Running", "Coordinates = Latitude = " + location.getLatitude() + " Longitude = " + location.getLongitude());
