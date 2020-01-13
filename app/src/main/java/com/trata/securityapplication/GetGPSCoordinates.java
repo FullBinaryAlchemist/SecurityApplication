@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.location.Location;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
@@ -29,6 +30,10 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.trata.securityapplication.Helper.FirebaseHelper;
+
 import es.dmoral.toasty.Toasty;
 
 public class GetGPSCoordinates extends Service {
@@ -53,6 +58,7 @@ public class GetGPSCoordinates extends Service {
     private static long locationreq_fastest;
     private static long locationreq_speedy;
 
+    private String uid;//storees uid
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -107,6 +113,8 @@ public class GetGPSCoordinates extends Service {
         }else {
             //Permission not Granted
         }*/
+
+        uid=FirebaseHelper.getInstance().getFirebaseAuth().getUid();
     }
 
     @Override
@@ -134,7 +142,8 @@ public class GetGPSCoordinates extends Service {
                             GetGPSCoordinates.lastKnownLocation = ddToDms(location.getLatitude(), location.getLongitude());
 
                             Log.d("GPS Service Running", "Coordinates = Latitude = " + location.getLatitude() + " Longitude = " + location.getLongitude());
-
+                            //update location on firebase if emergency
+                            updateFirebaseAlertLocation();
                         } else {
                             Log.d("GPS Service","Location Fetch failed");
                             Toast.makeText(getApplicationContext(), "Location Fetch Failed", Toast.LENGTH_SHORT).show();
@@ -330,5 +339,37 @@ public class GetGPSCoordinates extends Service {
         locationRequest.setFastestInterval(locationreq_fastest);
         requestLocationUpdates();
         Log.d("GPS Service","resetLocationRequest : interval set to "+locationreq_normal);
+    }
+
+    /**Updates the location on Firebase if Emergency has been raised**/
+    public void updateFirebaseAlertLocation(){
+        Log.d("GPS Firebase","Checking if emergency is rasied...");
+        try {
+            //check if alert node exists on firebase
+            Log.d("GPS Firebase","home_fragment.getAlertExists()"+(home_fragment.getAlertExists()));
+            Log.d("GPS Firebase","!(SendSMSService.getAlert() == 0 && SendSMSService.getEmergency() == 0):"+(!(SendSMSService.getAlert() == 0 && SendSMSService.getEmergency() == 0)));
+            if (home_fragment.getAlertExists() && !(SendSMSService.getAlert() == 0 && SendSMSService.getEmergency() == 0)) {
+                Log.d("GPS Firebase", "Pushing location to firebase");
+                FirebaseHelper.getInstance().getAlertsDatabaseReference().child(uid).child("location").setValue(ddLastKnownLocation)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d("GPS Firebase", "Location updated on firebase:" + ddLastKnownLocation);
+                                    Toasty.info(getApplicationContext(), "Your Location updated on firebase", Toasty.LENGTH_SHORT).show(); //TODO:remove
+                                } else {
+                                    Log.d("GPS Firebase", "Location NOT updated on fireabse:" + ddLastKnownLocation);
+
+                                }
+                            }
+                        });
+            } else {
+                Log.d("GPS Firebase", "No emergency has been raised");
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            Log.d("GPS Firebase","Error oocurred:"+e.getMessage());
+        }
     }
 }
