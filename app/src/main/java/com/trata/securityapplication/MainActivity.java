@@ -233,7 +233,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //NOTE:Removed default subscription
 
         //checks if User is logged in
-        if(user!=null){
+        Log.d(TAG,"User != null:"+(firebaseHelper.getFirebaseAuth().getCurrentUser()!=null));
+        if(firebaseHelper.getFirebaseAuth().getCurrentUser()!=null){
             //Handles the data received when Emergency Notification is clicked
             if (getIntent().getExtras() != null) {
 

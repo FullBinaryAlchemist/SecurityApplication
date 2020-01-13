@@ -61,6 +61,7 @@ public class home_fragment extends Fragment {
     private FirebaseHelper firebaseHelper= FirebaseHelper.getInstance();
     //NOTE: Button bt has been removed. Now using Button emergency. Event listeners also moved to emergency
     private static boolean alertExists=false;
+    String ts; //NOTE:was earlier in timestamp function
     Context c2;
     @Nullable
     @Override
@@ -159,10 +160,13 @@ public class home_fragment extends Fragment {
                         String formattedSubZone= GetGPSCoordinates.getFormattedZoning(GetGPSCoordinates.getSub_zone());
                         final String uid=firebaseHelper.getFirebaseAuth().getUid();
                         final String ddLastKnownLocation =GetGPSCoordinates.getddLastKnownLocation(); //for Location
+                        ts = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());//timestamp NOTE:was earlier in timestamp function
+
                         Log.d("home_fragment","Emergency: formattedSubZone:"+formattedSubZone+"\nuid:"+uid+"\nlocation:"+ddLastKnownLocation);
                         alertobj= new Alert();
                         alertobj.setLocation(ddLastKnownLocation);
                         alertobj.setSubzone(formattedSubZone);
+                        alertobj.setTs(ts);
                         //Temporary code to test saviours live location update
                         EmergencyMessagingService.subscribeTopic("saviours_"+uid); //TODO:Remove after Saviour fragment complete
                         EmergencyMessagingService.subscribeTopic("victim_"+uid);
@@ -309,10 +313,9 @@ public class home_fragment extends Fragment {
         Log.i ("isMyServiceRunning?", false+"");
         return false;
     }
-    public void timeStamp(String uid,String location){
+    public void timeStamp(String uid,String location, String ts){
 //        String location=GetGPSCoordinates.getddLastKnownLocation();
         Log.d("alert_history","Alert History working    "+uid);
-        String ts = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
         ts= TextUtils.join(":", Arrays.asList(ts.split("\\.")));
 
         firebaseHelper.getUsersDatabaseReference().child(uid).child("alert_history").child(ts).setValue(location)
@@ -347,13 +350,13 @@ public class home_fragment extends Fragment {
 
                 if (dataSnapshot.exists()) {
                     Log.d("Exists", "Return True");
+                    setAlertExists();
                     if(!createOrdelete){
-                        resetAlertExists();
                         deleteAlert(uid);
                     }
                 } else {
+                    resetAlertExists();
                     if(createOrdelete){
-                        setAlertExists();
                         addAlert(uid, ddLastKnownLocation);
                     }
                     Log.d("Not Exists", "Return False");
@@ -378,7 +381,8 @@ public class home_fragment extends Fragment {
                             if(task.isSuccessful()){
                                 Log.d("home_fragment","Firebase:Alert added in Firebase");
                                 Toasty.success(getActivity().getApplicationContext(),"Alert added in FIrebase",Toasty.LENGTH_LONG).show();
-                                timeStamp(uid,ddLastKnownLocation);
+                                timeStamp(uid,ddLastKnownLocation,ts); //function definition changed to include Timestamp as well
+                                setAlertExists();//sets Alert exists to true
                             }
                             else{
                                 Log.d("home_fragment","Firebase:Alert NOT ADDED in Firebase");
@@ -401,6 +405,7 @@ public class home_fragment extends Fragment {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if(task.isSuccessful()){
+                                resetAlertExists(); //Reset the alertExists boolean variable
                                 Log.d("home_fragment","Firebase:Alert Removed from Firebase");
                                 Toasty.success(getActivity().getApplicationContext(),"Alert Removed from FIrebase",Toasty.LENGTH_LONG).show();
                             }
