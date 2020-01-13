@@ -20,9 +20,9 @@ public class SendSMSService extends Service {
     private static String[] contactList=null; //TODO: stores the number of the emergency contacts
     private String senderName;
     private String location;
-    private static Integer alert;
-    private static Integer safe;
-    private static Integer emergency;
+    private static Integer alert=0;
+    private static Integer safe=1;
+    private static Integer emergency=0;
 
 
     private String SOS_MESSAGE="You are my SOS Contact." ;

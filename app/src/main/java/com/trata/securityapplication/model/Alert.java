@@ -6,7 +6,7 @@ public class Alert {
 
     String location;
     String subzone;
-
+    String ts;//timestamp
     public Alert() {
     }
 
@@ -31,5 +31,13 @@ public class Alert {
 
     public void setSubzone(String subzone) {
         this.subzone = subzone;
+    }
+
+    public String getTs() {
+        return ts;
+    }
+
+    public void setTs(String ts) {
+        this.ts = ts;
     }
 }
