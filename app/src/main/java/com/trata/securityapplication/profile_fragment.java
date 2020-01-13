@@ -757,6 +757,8 @@ public class profile_fragment extends Fragment {
 
 
             //to stop Messaging Service upon logout
+            //unsubscribe all topics
+            EmergencyMessagingService.unsubscribeAll();
             Intent mStopMessagingService = new Intent(getContext(),EmergencyMessagingService.class);
             getActivity().stopService(mStopMessagingService);
             Log.d("Profile Fragment","Messaging Service Stopped");

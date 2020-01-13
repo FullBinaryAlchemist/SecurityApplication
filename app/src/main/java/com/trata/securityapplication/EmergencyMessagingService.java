@@ -25,6 +25,10 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.trata.securityapplication.model.AlertDetails;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
+
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import es.dmoral.toasty.Toasty;
@@ -33,6 +37,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
     private static final String TAG="CloudMessagingService";
     private RemoteMessage remoteMessage;
     private String channelId="999";
+    private static HashMap<String,Boolean> subscribed=new HashMap<String, Boolean>(10); //a Hashmap to keep track of all subscribed topics
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // [START_EXCLUDE]
@@ -162,6 +167,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
                 String uid = (String) remoteMessage.getData().get("uid");
                 String username=(String) remoteMessage.getData().get("username");
                 AlertObjects.getAllAlerts().remove(uid);
+                EmergencyMessagingService.unsubscribeTopic("saviours_"+uid);// unsubscribe to prevent future live updates from receiving
                 //TODO:redirect to saviours fragment and update recycler view and history
             }
             else
@@ -184,8 +190,11 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
                         String msg = "Subscription to topic:"+topic/*getString(R.string.msg_subscribed)*/;
                         if (!task.isSuccessful()) {
                             msg += " failed";/*getString(R.string.msg_subscribe_failed)*/;
+                            Log.d(TAG, msg);
+                            return;
                         }
                         Log.d(TAG, msg);
+                        subscribed.put(topic,true);//add topic to subscribed Hashmap
                         //Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -198,11 +207,22 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
                         String msg = "Unsubscription from topic:"+topic/*getString(R.string.msg_subscribed)*/;
                         if (!task.isSuccessful()) {
                             msg += " failed";/*getString(R.string.msg_subscribe_failed)*/;
+                            Log.d(TAG, msg);
+                            return;
                         }
                         Log.d(TAG, msg);
+                        subscribed.remove(topic);//remove the topic from subscribed list
                         //Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    public static void unsubscribeAll(){
+        Log.d(TAG,"unsubscribeAll called");
+        for(Map.Entry<String, Boolean> entry : subscribed.entrySet()) {
+            String key = entry.getKey();
+            EmergencyMessagingService.unsubscribeTopic(key);
+        }
     }
     public static String getTopicString(String zone,String sub_zone){
         return "alerts_"+zone.split(",")[0]+"_"+zone.split(",")[1]+"_"+sub_zone.split(",")[0]+"_"+sub_zone.split(",")[1];
