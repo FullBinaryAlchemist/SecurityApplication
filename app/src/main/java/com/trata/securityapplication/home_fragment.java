@@ -350,13 +350,13 @@ public class home_fragment extends Fragment {
 
                 if (dataSnapshot.exists()) {
                     Log.d("Exists", "Return True");
+                    setAlertExists();
                     if(!createOrdelete){
-                        resetAlertExists();
                         deleteAlert(uid);
                     }
                 } else {
+                    resetAlertExists();
                     if(createOrdelete){
-                        setAlertExists();
                         addAlert(uid, ddLastKnownLocation);
                     }
                     Log.d("Not Exists", "Return False");
@@ -382,6 +382,7 @@ public class home_fragment extends Fragment {
                                 Log.d("home_fragment","Firebase:Alert added in Firebase");
                                 Toasty.success(getActivity().getApplicationContext(),"Alert added in FIrebase",Toasty.LENGTH_LONG).show();
                                 timeStamp(uid,ddLastKnownLocation,ts); //function definition changed to include Timestamp as well
+                                setAlertExists();//sets Alert exists to true
                             }
                             else{
                                 Log.d("home_fragment","Firebase:Alert NOT ADDED in Firebase");
@@ -404,6 +405,7 @@ public class home_fragment extends Fragment {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if(task.isSuccessful()){
+                                resetAlertExists(); //Reset the alertExists boolean variable
                                 Log.d("home_fragment","Firebase:Alert Removed from Firebase");
                                 Toasty.success(getActivity().getApplicationContext(),"Alert Removed from FIrebase",Toasty.LENGTH_LONG).show();
                             }
