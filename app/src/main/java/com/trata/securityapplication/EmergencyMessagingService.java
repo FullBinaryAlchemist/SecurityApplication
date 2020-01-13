@@ -94,13 +94,13 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
                 else{ //added new toasts
                     if(remoteMessage.getData().containsKey("safe")){
                         String username=(String) remoteMessage.getData().get("username");
-                        Toasty.success(getBaseContext(),username+"is now safe.Thanks for your help!",Toasty.LENGTH_LONG).show();
+                        Toasty.success(getBaseContext(),username+" is now safe.Thanks for your help!",Toasty.LENGTH_LONG).show();
                     }
                     else
                     {
 
                         String uid = (String) remoteMessage.getData().get("uid");
-                        Toast.makeText(getApplicationContext(),"Location updates were received. For uid:"+uid,Toast.LENGTH_LONG).show();//TODO:remove toast
+                        Toast.makeText(getBaseContext(),"Location updates were received. For uid:"+uid,Toast.LENGTH_LONG).show();//TODO:remove toast
 
                     }
                 }
