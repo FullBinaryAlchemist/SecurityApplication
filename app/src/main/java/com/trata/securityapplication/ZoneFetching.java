@@ -59,7 +59,7 @@ public class ZoneFetching {
         }
     }
 
-    //converts
+    //converts into proper subzones i.e. in interval of 2 minutes
     public static String getProperSubzone( String subzone){
         String splitsub[]=subzone.split(",");
         int subzones[]=new int[2];

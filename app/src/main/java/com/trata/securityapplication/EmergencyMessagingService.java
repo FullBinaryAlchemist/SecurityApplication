@@ -23,9 +23,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.here.olp.network.HttpClient;
 import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.model.AlertDetails;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -199,6 +203,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         }
     }
     public static void subscribeTopic(final String topic){
+
         FirebaseMessaging.getInstance().subscribeToTopic(topic)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -219,7 +224,8 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         FirebaseMessaging.getInstance().unsubscribeFromTopic(topic)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
-                    public void onComplete(@NonNull Task<Void> task) {
+                    public void onComplete(
+                            @NonNull Task<Void> task) {
                         String msg = "Unsubscription from topic:"+topic/*getString(R.string.msg_subscribed)*/;
                         if (!task.isSuccessful()) {
                             msg += " failed";/*getString(R.string.msg_subscribe_failed)*/;
@@ -241,6 +247,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         }
     }
     public static String getTopicString(String zone,String sub_zone){
+
         return "alerts_"+zone.split(",")[0]+"_"+zone.split(",")[1]+"_"+sub_zone.split(",")[0]+"_"+sub_zone.split(",")[1];
     }
 
@@ -310,4 +317,24 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         notificationManager.notify(999, notificationBuilder.build());
 
     }
-}
+
+//    public void callUrl(String keys){
+//        HttpResponse response = null;
+//        try {
+//            HttpClient client = new DefaultHttpClient();
+//            HttpGet request = new HttpGet();
+//            request.setURI(new URI("https://us-central1-securityapplication-b990e.cloudfunctions.net/testCount"+keys));
+//            response = client.execute(request);
+//        } catch (URISyntaxException e) {
+//            e.printStackTrace();
+//        } catch (ClientProtocolException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+//        //return response;
+//    }
+    }
+

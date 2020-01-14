@@ -58,6 +58,8 @@ public class GetGPSCoordinates extends Service {
     private static long locationreq_fastest;
     private static long locationreq_speedy;
 
+    public static String oldTopic=" ";
+
     private String uid;//storees uid
     @Nullable
     @Override
@@ -197,19 +199,7 @@ public class GetGPSCoordinates extends Service {
         return START_STICKY;
     }
 
-    /*
-    public int[] degreeToDMS(double coordinate){
-        coordinate=Math.abs(coordinate);
-        int c_degrees= (int)coordinate ;
 
-        double minutes_seconds= coordinate-c_degrees;
-        double minutes= (minutes_seconds*60);
-        int c_minutes= (int)minutes;
-
-        double seconds= (minutes%1)*60;
-        int c_seconds=(int)seconds;
-
-    }*/
 
     public String ddToDms(double ilat,double ilng) {
 
@@ -254,26 +244,37 @@ public class GetGPSCoordinates extends Service {
 
         //Example to subscribe to a single zone
         String topic_example=EmergencyMessagingService.getTopicString(getZone(),getSub_zone());
+
         EmergencyMessagingService.subscribeTopic(topic_example);
 
-        //Unsubscribing from previous zones
-        for(int i=0;i<ZoneFetching.getCount();i++){
-            String topic=EmergencyMessagingService.getTopicString(ZoneFetching.getNewZonesList()[i],ZoneFetching.getNewSubzonesList()[i]);
-            EmergencyMessagingService.unsubscribeTopic(topic);
-            Log.d("UNSubscription","Unsubscribed from topic"+topic);
-            //Toasty.info(getApplicationContext(),"Unsubscribed from topic"+topic,Toasty.LENGTH_SHORT).show();
+        Log.d("Topic Check","Checking change in user topic....");
+        if(oldTopic!=topic_example) {
+            //Unsubscribing from previous zones
+            Log.d("Topic Check","New Topic:"+topic_example);
+
+            for (int i = 0; i < ZoneFetching.getCount(); i++) {
+                String topic = EmergencyMessagingService.getTopicString(ZoneFetching.getNewZonesList()[i], ZoneFetching.getNewSubzonesList()[i]);
+                EmergencyMessagingService.unsubscribeTopic(topic);
+                Log.d("UNSubscription", "Unsubscribed from topic" + topic);
+                //Toasty.info(getApplicationContext(),"Unsubscribed from topic"+topic,Toasty.LENGTH_SHORT).show();
+            }
+
+            //fetching New Zones and Subscribing to them
+            ZoneFetching.fetchAllSub(getZone(), getSub_zone());
+
+            for (int i = 0; i < ZoneFetching.getCount(); i++) {
+                String topic = EmergencyMessagingService.getTopicString(ZoneFetching.getNewZonesList()[i], ZoneFetching.getNewSubzonesList()[i]);
+                EmergencyMessagingService.subscribeTopic(topic);
+                Log.d("Subscription", "Subscribed to topic" + topic);
+                //Toasty.info(getApplicationContext(),"Subscribed to topic"+topic,Toasty.LENGTH_SHORT).show();
+            }
+
+
+            oldTopic=topic_example;
         }
-
-        //fetching New Zones and Subscribing to them
-        ZoneFetching.fetchAllSub(getZone(),getSub_zone());
-
-        for(int i=0;i<ZoneFetching.getCount();i++){
-            String topic=EmergencyMessagingService.getTopicString(ZoneFetching.getNewZonesList()[i],ZoneFetching.getNewSubzonesList()[i]);
-            EmergencyMessagingService.subscribeTopic(topic);
-            Log.d("Subscription","Subscribed to topic"+topic);
-            //Toasty.info(getApplicationContext(),"Subscribed to topic"+topic,Toasty.LENGTH_SHORT).show();
+        else{
+            Log.d("Topic Check","Same Topic:"+oldTopic);
         }
-
     }
 
     public static String getZone(){
