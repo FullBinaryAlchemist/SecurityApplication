@@ -61,6 +61,7 @@ public class home_fragment extends Fragment {
     private FirebaseHelper firebaseHelper= FirebaseHelper.getInstance();
     //NOTE: Button bt has been removed. Now using Button emergency. Event listeners also moved to emergency
     private static boolean alertExists=false;
+    public static int testcount=0; //store the count of saviours when emergency pressed in testmode
     String ts; //NOTE:was earlier in timestamp function
     Context c2;
     @Nullable
@@ -152,13 +153,13 @@ public class home_fragment extends Fragment {
                     assert c2 != null;
                     c2.startService(emergencyintent2);
 
-
+                    final String uid=firebaseHelper.getFirebaseAuth().getUid();
+                    EmergencyMessagingService.subscribeTopic("victim_"+uid);
 
                     //check if not test mode.Otherwise don't raise entry on firebase
-                    if(!test){
+                    if(!navigation.test){
 
                         String formattedSubZone= GetGPSCoordinates.getFormattedZoning(GetGPSCoordinates.getSub_zone());
-                        final String uid=firebaseHelper.getFirebaseAuth().getUid();
                         final String ddLastKnownLocation =GetGPSCoordinates.getddLastKnownLocation(); //for Location
                         ts = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());//timestamp NOTE:was earlier in timestamp function
 
@@ -169,8 +170,8 @@ public class home_fragment extends Fragment {
                         alertobj.setTs(ts);
                         //Temporary code to test saviours live location update
                         EmergencyMessagingService.subscribeTopic("saviours_"+uid); //TODO:Remove after Saviour fragment complete
-                        EmergencyMessagingService.subscribeTopic("victim_"+uid);
                         //TODO:check whether an Emergency has already been raised by User. If there already exists then don't create another entry
+                        Log.d("Exists","Calling Calling Exists..................");
                         exists(uid,ddLastKnownLocation,true);//creates
 
                     }
@@ -214,6 +215,8 @@ public class home_fragment extends Fragment {
                 NotificationManager notificationManager =
                         (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
                 notificationManager.cancel(999); //Cancelling the SaviourCount notification
+
+                resetTestCount();
 
                 //TODO:check if Alert node exists and it does then delete it 
                 //exists(uid,"",false);
@@ -342,6 +345,7 @@ public class home_fragment extends Fragment {
     }
 
     public void exists(String uid, String ddLastKnownLocation,boolean createOrdelete /**Adds if true . Delete if false*/){
+        Log.d("Exists","Calling Exists..................");
         firebaseHelper.getAlertsDatabaseReference().child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
@@ -429,6 +433,10 @@ public class home_fragment extends Fragment {
     public static boolean getAlertExists(){ return alertExists; }
     public static void setAlertExists(){ alertExists=true; }
     public static void resetAlertExists(){alertExists=false;}
+
+    public static void incrementTestCount(){ Log.d("incrementTestCount","Testcount:"+(++testcount)); }
+    public static void resetTestCount(){testcount=0;}
+    public static int getTestCount(){return testcount;}
 }
 
 

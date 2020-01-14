@@ -123,13 +123,13 @@ public class Routing {
          addCircleMapMarker(geoCoordinatesAlert, R.drawable.alert);**/
 
         // Log maneuver instructions per route leg.
-        List<RouteLeg> routeLegs = route.getLegs();
+       /** List<RouteLeg> routeLegs = route.getLegs();
         for (RouteLeg routeLeg : routeLegs) {
             logManeuverInstructions(routeLeg);
-        }
+        }*/
     }
     /**Shows directions within html tags*/
-    private void logManeuverInstructions(RouteLeg routeLeg) {
+    /**private void logManeuverInstructions(RouteLeg routeLeg) {
         Log.d(TAG, "Log maneuver instructions per route leg:");
         List<Maneuver> maneuverInstructions = routeLeg.getManeuvers();
         for (Maneuver maneuverInstruction : maneuverInstructions) {
@@ -140,7 +140,7 @@ public class Routing {
                     + ", Location: " + maneuverLocation.toString();
             Log.d(TAG, maneuverInfo);
         }
-    }
+    }*/
     /** shows distance and time to reach*/
     private void showRouteDetails(Route route) {
         int estimatedTravelTimeInSeconds = route.getTravelTimeInSeconds();

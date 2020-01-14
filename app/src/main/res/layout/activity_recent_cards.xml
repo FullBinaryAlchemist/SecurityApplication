@@ -51,22 +51,22 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <Button
+         <!--   <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="500dp"
                 android:layout_marginBottom="32dp"
                 android:onClick="addRouteButtonClicked"
-                android:text="Add Route" />
+                android:text="Add Route" /> -->
 
-            <Button
+         <!--   <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="200dp"
                 android:layout_marginTop="500dp"
                 android:layout_weight="1"
                 android:onClick="clearMapButtonClicked"
-                android:text="Clear Map" />
+                android:text="Clear Map" /> -->
         </com.here.sdk.mapviewlite.MapViewLite>
     </android.support.constraint.ConstraintLayout>
 </LinearLayout>

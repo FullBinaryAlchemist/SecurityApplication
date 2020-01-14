@@ -23,7 +23,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
 import com.google.firebase.storage.StorageReference;
+
 import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.model.AlertDetails;
 
@@ -40,6 +42,8 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
     private RemoteMessage remoteMessage;
     private String channelId="999";
     private static HashMap<String,Boolean> subscribed=new HashMap<String, Boolean>(10); //a Hashmap to keep track of all subscribed topics
+    String useruid;
+
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // [START_EXCLUDE]
@@ -165,6 +169,19 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
             if(remoteMessage.getData().containsKey("saviourCount")){
                 String count=remoteMessage.getData().get("saviourCount");
                 showSaviourCountNotification(Integer.parseInt(count));
+            }
+            else if(remoteMessage.getData().containsKey("sendCount")){
+                Log.d(TAG,"sendCount message received");
+                //TODO:http call
+            }
+            else if(remoteMessage.getData().containsKey("testCount")){
+                Log.d(TAG,"testCount message received");
+                String uid=remoteMessage.getData().get("uid");
+                useruid= FirebaseHelper.getInstance().getFirebaseAuth().getUid();
+                if(useruid.equals(uid)){
+                    home_fragment.incrementTestCount();
+                    showSaviourCountNotification(home_fragment.getTestCount());
+                }
             }
             else if(remoteMessage.getData().containsKey("safe")){
                 Log.d(TAG,"Safety message received");
