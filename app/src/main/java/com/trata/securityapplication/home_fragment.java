@@ -155,7 +155,7 @@ public class home_fragment extends Fragment {
 
 
                     //check if not test mode.Otherwise don't raise entry on firebase
-                    if(!test){
+                    if(!navigation.test){
 
                         String formattedSubZone= GetGPSCoordinates.getFormattedZoning(GetGPSCoordinates.getSub_zone());
                         final String uid=firebaseHelper.getFirebaseAuth().getUid();
@@ -171,6 +171,7 @@ public class home_fragment extends Fragment {
                         EmergencyMessagingService.subscribeTopic("saviours_"+uid); //TODO:Remove after Saviour fragment complete
                         EmergencyMessagingService.subscribeTopic("victim_"+uid);
                         //TODO:check whether an Emergency has already been raised by User. If there already exists then don't create another entry
+                        Log.d("Exists","Calling Calling Exists..................");
                         exists(uid,ddLastKnownLocation,true);//creates
 
 
@@ -343,6 +344,7 @@ public class home_fragment extends Fragment {
     }
 
     public void exists(String uid, String ddLastKnownLocation,boolean createOrdelete /**Adds if true . Delete if false*/){
+        Log.d("Exists","Calling Exists..................");
         firebaseHelper.getAlertsDatabaseReference().child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
