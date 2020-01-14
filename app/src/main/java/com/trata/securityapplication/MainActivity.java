@@ -248,7 +248,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 alertDetails.setName((String)getIntent().getExtras().get("username"));
                 alertDetails.setLocation((String)getIntent().getExtras().get("liveLocation"));
                 alertDetails.setUid((String)getIntent().getExtras().get("uid"));
-                //TODO Add imageUrl
                 StorageReference image_ref=firebaseHelper.getStorageReference_ofuid(alertDetails.getUid());
                 alertDetails.setImageUrl(image_ref);
 

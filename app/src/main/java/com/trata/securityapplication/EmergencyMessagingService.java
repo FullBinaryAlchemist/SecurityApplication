@@ -174,6 +174,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
                 AlertObjects.getAllAlerts().remove(uid);
                 EmergencyMessagingService.unsubscribeTopic("saviours_"+uid);// unsubscribe to prevent future live updates from receiving
                 //TODO:redirect to saviours fragment and update recycler view and history
+
             }
             else
             {
@@ -187,6 +188,9 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
             }
         }
     }
+
+
+
     public static void subscribeTopic(final String topic){
         FirebaseMessaging.getInstance().subscribeToTopic(topic)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {

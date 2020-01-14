@@ -284,7 +284,6 @@ public class recent_cards extends AppCompatActivity {
                     routing = new Routing(recent_cards.this, mapView,geoCoordinatesAlert, geoCoordinatesSaviour);
 
 
-
                 } else {
                     Log.d(TAG, "onLoadScene failed: " + errorCode.toString());
                 }
