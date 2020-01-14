@@ -196,19 +196,7 @@ public class GetGPSCoordinates extends Service {
         return START_STICKY;
     }
 
-    /*
-    public int[] degreeToDMS(double coordinate){
-        coordinate=Math.abs(coordinate);
-        int c_degrees= (int)coordinate ;
 
-        double minutes_seconds= coordinate-c_degrees;
-        double minutes= (minutes_seconds*60);
-        int c_minutes= (int)minutes;
-
-        double seconds= (minutes%1)*60;
-        int c_seconds=(int)seconds;
-
-    }*/
 
     public String ddToDms(double ilat,double ilng) {
 
@@ -347,7 +335,7 @@ public class GetGPSCoordinates extends Service {
             //check if alert node exists on firebase
             Log.d("GPS Firebase","home_fragment.getAlertExists()"+(home_fragment.getAlertExists()));
             Log.d("GPS Firebase","!(SendSMSService.getAlert() == 0 && SendSMSService.getEmergency() == 0):"+(!(SendSMSService.getAlert() == 0 && SendSMSService.getEmergency() == 0)));
-            if (home_fragment.getAlertExists() && !(SendSMSService.getAlert() == 0 && SendSMSService.getEmergency() == 0)) {
+            if (home_fragment.getAlertExists() && !(SendSMSService.getAlert() == 0 && SendSMSService.getEmergency() == 0) && !navigation.test) {
                 Log.d("GPS Firebase", "Pushing location to firebase");
                 FirebaseHelper.getInstance().getAlertsDatabaseReference().child(uid).child("location").setValue(ddLastKnownLocation)
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
