@@ -31,7 +31,6 @@ import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.model.AlertDetails;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -44,8 +43,10 @@ public class recent_cards extends AppCompatActivity {
     // private MapStyle mapStyle;
     Context context = this;
     private TextView name;
-    public static double alertLongitude;
-    public static double alertLatitude;
+    public static double saviourLongitude;
+    public static double saviourLatitude;
+    public static double victimLongitude;
+    public static double victimLatitude;
 
     GeoCoordinates geoCoordinatesAlert;
     GeoCoordinates geoCoordinatesSaviour;
@@ -53,14 +54,12 @@ public class recent_cards extends AppCompatActivity {
     String zone,sub_zone;
     private Routing routing;
     Timer timer = new Timer();
-    public static void setLatitude(double latitude) {
-        Log.d(TAG,"setLatitude:"+latitude);
-        alertLatitude = latitude;
-    }
+    private AlertDetails ad;
 
-    public static void setLongitude(double longitude) {
-        Log.d(TAG,"setlongitude:"+longitude);
-        alertLongitude = longitude;
+    public static void setSaviourLocation(double latitude, double longitude) {
+        saviourLatitude = latitude;
+        saviourLongitude = longitude;
+
     }
 
     @Override
@@ -70,8 +69,10 @@ public class recent_cards extends AppCompatActivity {
         setContentView(R.layout.activity_recent_cards);
         String uid=getIntent().getStringExtra("uid");
         HashMap<String, AlertDetails> detail=AlertObjects.getAllAlerts();
-        AlertDetails ad=detail.get(uid);
-
+        ad=detail.get(uid);
+        //updateLocation(ad.getLocation());
+        String victimLocation = ad.getLocation();
+        Log.d("victimLocation","---"+victimLocation);
         /** Get a MapViewLite instance from the layout.*/
         mapView = findViewById(R.id.map_view);
         name = findViewById(R.id.name);
@@ -158,9 +159,9 @@ public class recent_cards extends AppCompatActivity {
 
     public  void loadMapScene() {
 
-        Log.d("loadMapScene","coordinates  "+alertLatitude+","+alertLongitude );
-        geoCoordinatesAlert = new GeoCoordinates(alertLatitude, alertLongitude); //End point
-        geoCoordinatesSaviour = new GeoCoordinates(19.404046299999998, 72.8284918);//Start point
+        Log.d("loadMapScene","coordinates  "+ saviourLatitude +","+ saviourLongitude);
+        geoCoordinatesAlert = new GeoCoordinates(19.404046299999998, 72.8284918); //End point
+        geoCoordinatesSaviour = new GeoCoordinates(saviourLatitude, saviourLongitude);//Start point
 
         // Load a scene from the SDK to render the map with a map style.
 
@@ -197,6 +198,8 @@ public class recent_cards extends AppCompatActivity {
                         public void run() {
                             //TODO:update geoCoordinates for victim and saviour and
                             // Fetch the image of victim if distance is less than 100m and UpdateUI
+
+                            updateLocation(ad.getLocation());
                             Log.d("run","loading Map Scene");
                             loadMarker(mapMarkerImageStyle);
                         }
@@ -236,10 +239,11 @@ public class recent_cards extends AppCompatActivity {
         mapMarkerSaviour.addImage(mapImageSaviour, mapMarkerImageStyle);
         mapView.getMapScene().addMapMarker(mapMarkerSaviour);
 
+        routing.addRoute(geoCoordinatesAlert,geoCoordinatesSaviour);
 
     }
     /**Loads the Route between given co-ordinates*/
-    public void addRouteButtonClicked(View view) {
+ /**   public void addRouteButtonClicked(View view) {
         routing.addRoute(geoCoordinatesAlert,geoCoordinatesSaviour);
 
     }
@@ -266,6 +270,21 @@ public class recent_cards extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mapView.onDestroy();
+    }
+
+    public void updateLocation(String location){
+        //Update geocordinatesalert object
+        String victimLocation = location;
+        Log.d("updateLocation","victimLocation"+victimLocation);
+        String[] victimCoordinates = victimLocation.split(",");
+         victimLatitude = Double.parseDouble(victimCoordinates[0]);
+         victimLongitude = Double.parseDouble(victimCoordinates[1]);
+        geoCoordinatesAlert = new GeoCoordinates(victimLatitude,victimLongitude);
+        Log.d("updateLocation","geoCoordinatesAlert"+geoCoordinatesAlert);
+        //Update geocoordinatessaviour object
+
+        geoCoordinatesSaviour = new GeoCoordinates(saviourLatitude, saviourLongitude);
+        Log.d("updateLocation","geoCoordinatesSaviour"+geoCoordinatesSaviour);
     }
 
 }
