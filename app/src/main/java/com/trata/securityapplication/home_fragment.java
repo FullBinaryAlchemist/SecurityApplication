@@ -40,6 +40,7 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.model.Alert;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Objects;
@@ -429,6 +430,15 @@ public class home_fragment extends Fragment {
     //TODO:create an HTTP endpoint using cloud function and call that endpoint
     public void sendTestMessage(final String uid){
         Log.d("TestMessage","Will send a test mode message");
+        String topic=EmergencyMessagingService.getTopicString(GetGPSCoordinates.getZone(),GetGPSCoordinates.getSub_zone());
+        String params="?callerUid="+uid+"&targetUid="+uid+"&topic="+topic;
+        Log.d("TestMessage","params:"+params);
+
+        try {
+            EmergencyMessagingService.callUrl(params);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static boolean getAlertExists(){ return alertExists; }
