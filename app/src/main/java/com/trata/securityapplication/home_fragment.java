@@ -173,7 +173,6 @@ public class home_fragment extends Fragment {
                         //TODO:check whether an Emergency has already been raised by User. If there already exists then don't create another entry
                         exists(uid,ddLastKnownLocation,true);//creates
 
-
                     }
                     //Showing testmode count
                     else {

@@ -23,6 +23,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.google.firebase.storage.StorageReference;
+import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.model.AlertDetails;
 
 import java.util.HashMap;
@@ -146,6 +148,9 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
             alertDetails.setName((String) remoteMessage.getData().get("username"));
             alertDetails.setLocation((String) remoteMessage.getData().get("liveLocation"));
             alertDetails.setUid((String) remoteMessage.getData().get("uid"));
+            FirebaseHelper firebaseHelper=FirebaseHelper.getInstance();
+            StorageReference storageReference=firebaseHelper.getStorageReference_ofuid((String) remoteMessage.getData().get("uid"));
+            alertDetails.setImageUrl(storageReference);
             for (String key : keys) {
 
                 Object value = remoteMessage.getData().get(key);

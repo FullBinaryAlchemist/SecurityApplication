@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
@@ -14,12 +16,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.storage.StorageReference;
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.GeoCoordinates;
 import com.here.sdk.mapviewlite.MapImage;
@@ -49,6 +55,7 @@ public class recent_cards extends AppCompatActivity {
     private TextView name;
     public static double alertLongitude;
     public static double alertLatitude;
+    ImageView profile_image;
     SQLiteDBHelper mydb = SQLiteDBHelper.getInstance(this);
     GeoCoordinates geoCoordinatesAlert;
     GeoCoordinates geoCoordinatesSaviour;
@@ -72,11 +79,26 @@ public class recent_cards extends AppCompatActivity {
         overridePendingTransition( R.anim.slide_in_up, R.anim.slide_out_up );
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recent_cards);
+        profile_image=findViewById(R.id.imageView3);
         View nestedScrollView = (View) findViewById(R.id.nestedScrollView);
         bottomSheetBehavior = BottomSheetBehavior.from(nestedScrollView);
         String uid=getIntent().getStringExtra("uid");
         HashMap<String, AlertDetails> detail=AlertObjects.getAllAlerts();
         AlertDetails ad=detail.get(uid);
+        StorageReference image_ref=ad.getImageUrl();
+        image_ref.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                // Use the bytes to display the image
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                profile_image.setImageBitmap(bitmap);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+            }
+        });
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
@@ -108,7 +130,7 @@ public class recent_cards extends AppCompatActivity {
 
                 Log.d("bottomsachin",state);
                 if(state.equals("COLLAPSED"))
-                    bottomSheetBehavior.setPeekHeight(140);
+                    bottomSheetBehavior.setPeekHeight(90);
             }
 
             @Override
