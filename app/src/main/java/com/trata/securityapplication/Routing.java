@@ -170,7 +170,7 @@ public class Routing {
 
     public void clearMap() {
         clearWaypointMapMarker();
-        //clearRoute();
+        clearRoute();
     }
 
 

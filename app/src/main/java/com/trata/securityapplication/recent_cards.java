@@ -67,6 +67,7 @@ public class recent_cards extends AppCompatActivity {
     TimerTask task;
     private AlertDetails ad;
     MapMarker mapMarkerAlert;
+    MapImage mapImageAlert;
 
     public static void setSaviourLocation(double latitude, double longitude) {
         saviourLatitude = latitude;
@@ -255,7 +256,7 @@ public class recent_cards extends AppCompatActivity {
                                 loadMarker(mapMarkerImageStyle);
                         }
                     };
-                    timer.schedule(task,500, 30000);
+                    timer.schedule(task,500, 60000);
 
                     //Calls the Routing Class
                     routing = new Routing(recent_cards.this, mapView,geoCoordinatesAlert, geoCoordinatesSaviour);
@@ -273,14 +274,11 @@ public class recent_cards extends AppCompatActivity {
     void loadMarker(MapMarkerImageStyle mapMarkerImageStyle){
         //Update the marker
 
-        MapImage mapImageAlert = MapImageFactory.fromResource(context.getResources(),R.drawable.alert);
-        MapMarker mapMarkerAlert = new MapMarker(geoCoordinatesAlert);
+         mapImageAlert = MapImageFactory.fromResource(context.getResources(),R.drawable.alert);
+         mapMarkerAlert = new MapMarker(geoCoordinatesAlert);
 
         MapImage mapImageSaviour = MapImageFactory.fromResource(context.getResources(),R.drawable.saviour);
         MapMarker mapMarkerSaviour = new MapMarker(geoCoordinatesSaviour);
-
-        MapImage mapImageLast = MapImageFactory.fromResource(context.getResources(),R.drawable.alert);
-        MapMarker mapMarkerLast = new MapMarker(geoCoordinatesPrevious);
 
         mapMarkerAlert.addImage(mapImageAlert, mapMarkerImageStyle);
         mapView.getMapScene().addMapMarker(mapMarkerAlert);
@@ -325,7 +323,8 @@ public class recent_cards extends AppCompatActivity {
     public void updateLocation(String location){
 
         //Remove previous markers
-        geoCoordinatesLastLocation = geoCoordinatesAlert;
+
+        removeMarker();
         //Update geocordinatesalert object
         String victimLocation = location;
         Log.d("updateLocation","victimLocation"+victimLocation);
@@ -339,9 +338,13 @@ public class recent_cards extends AppCompatActivity {
         geoCoordinatesSaviour = new GeoCoordinates(saviourLatitude, saviourLongitude);
         Log.d("updateLocation","geoCoordinatesSaviour"+geoCoordinatesSaviour);
 
-        routing.clearMap();
+        //routing.clearMap();
     }
 
+    private void removeMarker() {
+        mapView.getMapScene().removeMapMarker(mapMarkerAlert);
+        routing.clearMap();
+    }
 
 
 }
