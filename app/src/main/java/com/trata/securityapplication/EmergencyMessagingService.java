@@ -177,6 +177,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
             else if(remoteMessage.getData().containsKey("sendCount")){
                 Log.d(TAG,"sendCount message received");
                 String uid=remoteMessage.getData().get("uid");
+                useruid=FirebaseHelper.getInstance().getFirebaseAuth().getUid();
                 //TODO:http call
                 String params="?callerUid="+useruid+"&targetUid="+uid;
                 Log.d(TAG,"params:"+params);
