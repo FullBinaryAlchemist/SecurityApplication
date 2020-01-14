@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +33,8 @@ import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.model.AlertDetails;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -48,13 +52,21 @@ public class recent_cards extends AppCompatActivity {
     public static double victimLongitude;
     public static double victimLatitude;
 
+    public static double alertLongitude;
+    public static double alertLatitude;
+
+    SQLiteDBHelper mydb = SQLiteDBHelper.getInstance(this);
     GeoCoordinates geoCoordinatesAlert;
     GeoCoordinates geoCoordinatesSaviour;
-
+    GeoCoordinates geoCoordinatesLastLocation;
+    LinearLayout linearLayout;
+    BottomSheetBehavior bottomSheetBehavior;
     String zone,sub_zone;
     private Routing routing;
     Timer timer = new Timer();
+    TimerTask task;
     private AlertDetails ad;
+    MapMarker mapMarkerAlert;
 
     public static void setSaviourLocation(double latitude, double longitude) {
         saviourLatitude = latitude;
@@ -67,12 +79,54 @@ public class recent_cards extends AppCompatActivity {
         overridePendingTransition( R.anim.slide_in_up, R.anim.slide_out_up );
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recent_cards);
+        View nestedScrollView = (View) findViewById(R.id.nestedScrollView);
+        bottomSheetBehavior = BottomSheetBehavior.from(nestedScrollView);
         String uid=getIntent().getStringExtra("uid");
         HashMap<String, AlertDetails> detail=AlertObjects.getAllAlerts();
         ad=detail.get(uid);
         //updateLocation(ad.getLocation());
         String victimLocation = ad.getLocation();
         Log.d("victimLocation","---"+victimLocation);
+        AlertDetails ad=detail.get(uid);
+        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                String state = "";
+
+                switch (newState) {
+                    case BottomSheetBehavior.STATE_DRAGGING: {
+                        state = "DRAGGING";
+                        break;
+                    }
+                    case BottomSheetBehavior.STATE_SETTLING: {
+                        state = "SETTLING";
+                        break;
+                    }
+                    case BottomSheetBehavior.STATE_EXPANDED: {
+                        state = "EXPANDED";
+                        break;
+                    }
+                    case BottomSheetBehavior.STATE_COLLAPSED: {
+                        state = "COLLAPSED";
+                        break;
+                    }
+                    case BottomSheetBehavior.STATE_HIDDEN: {
+                        state = "HIDDEN";
+
+                        break;
+                    }
+                }
+
+                Log.d("bottomsachin",state);
+                if(state.equals("COLLAPSED"))
+                    bottomSheetBehavior.setPeekHeight(140);
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                Log.d("bottomsachin","onslide");
+            }
+        });
         /** Get a MapViewLite instance from the layout.*/
         mapView = findViewById(R.id.map_view);
         name = findViewById(R.id.name);
@@ -97,22 +151,32 @@ public class recent_cards extends AppCompatActivity {
         accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
                 addSaviourToAlert(ad.getUid());
                 EmergencyMessagingService.subscribeTopic("saviours_"+ad.getUid()); //subscribing to topic saviours_#uidVictim to receive live location updates
                 //TODO:Remove reject option and updateUI
             }
         });
-        //TODO: Remove the alertDetail object and key from AlertObjects . Update the history of the user on firebase and in local database
+        //TODO: Remove the alertDetail object and key from AlertObjects . Update the history of the user on firebase and in local database:SEEN
         decline.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*Cancel the timertask*/
+                task.cancel();
                 EmergencyMessagingService.unsubscribeTopic("saviours_"+ad.getUid()); //in-case the user got subscribed to topic->unsubscribe them
                 //removing the AlertDetail object form AlertObjects
                 AlertObjects.getAllAlerts().remove(uid);
                 Log.d("saviour"," Alert#"+uid+" was removed from the alerts hashmap");
                 //update history
-
+                Date date = new Date();
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+                String strDate= formatter.format(date);
+                mydb.addhistory(ad.getName(),strDate);
                 //close this activity and recycler view should be updated
+                Intent intent=new Intent(recent_cards.this,navigation.class);
+                intent.putExtra("saviour",true);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
                 finish();
 
             }
@@ -160,7 +224,7 @@ public class recent_cards extends AppCompatActivity {
     public  void loadMapScene() {
 
         Log.d("loadMapScene","coordinates  "+ saviourLatitude +","+ saviourLongitude);
-        geoCoordinatesAlert = new GeoCoordinates(19.404046299999998, 72.8284918); //End point
+        geoCoordinatesAlert = new GeoCoordinates(victimLatitude, victimLongitude); //End point
         geoCoordinatesSaviour = new GeoCoordinates(saviourLatitude, saviourLongitude);//Start point
 
         // Load a scene from the SDK to render the map with a map style.
@@ -173,42 +237,26 @@ public class recent_cards extends AppCompatActivity {
                     mapView.getCamera().setTarget(geoCoordinatesSaviour);
                     mapView.getCamera().setZoomLevel(14);
                     //Show the marker on map
-                    /**   MapImage mapImageAlert = MapImageFactory.fromResource(context.getResources(),R.drawable.alert);
-                     MapMarker mapMarkerAlert = new MapMarker(geoCoordinatesAlert);
-                     MapImage mapImageSaviour = MapImageFactory.fromResource(context.getResources(),R.drawable.saviour);
-                     MapMarker mapMarkerSaviour = new MapMarker(geoCoordinatesSaviour); */
 
                     MapMarkerImageStyle mapMarkerImageStyle = new MapMarkerImageStyle();
                     mapMarkerImageStyle.setAnchorPoint(new Anchor2D(0.5F, 1)); //Anchors the marker by the middle to the location
                     mapMarkerImageStyle.setScale(0.06F);                               //Scales the drawable image
 
-                    /**  mapMarkerAlert.addImage(mapImageAlert, mapMarkerImageStyle);
-                     mapView.getMapScene().addMapMarker(mapMarkerAlert);
-                     mapMarkerSaviour.addImage(mapImageSaviour, mapMarkerImageStyle);
-                     mapView.getMapScene().addMapMarker(mapMarkerSaviour);*/
-
-                    /**   final Handler handler = new Handler();
-                     handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {*/
                     //Do something after 100ms
                     //handler.postDelayed(this, 10000);
-                    TimerTask task = new TimerTask() {
+                     task = new TimerTask() {
                         @Override
                         public void run() {
-                            //TODO:update geoCoordinates for victim and saviour and
-                            // Fetch the image of victim if distance is less than 100m and UpdateUI
-
-                            updateLocation(ad.getLocation());
-                            Log.d("run","loading Map Scene");
-                            loadMarker(mapMarkerImageStyle);
+                                //TODO:update geoCoordinates for victim and saviour and
+                                // Fetch the image of victim if distance is less than 100m and UpdateUI
+                                ad = AlertObjects.getAlert(ad.getUid());
+                                updateLocation(ad.getLocation());
+                                Log.d("run","loading Map Scene");
+                                loadMarker(mapMarkerImageStyle);
                         }
                     };
-                    timer.schedule(task,500, 60000);
+                    timer.schedule(task,500, 30000);
 
-
-                    /**       }
-                     }, 5000);*/
                     //Calls the Routing Class
                     routing = new Routing(recent_cards.this, mapView,geoCoordinatesAlert, geoCoordinatesSaviour);
 
@@ -224,33 +272,35 @@ public class recent_cards extends AppCompatActivity {
 
     void loadMarker(MapMarkerImageStyle mapMarkerImageStyle){
         //Update the marker
-        /**Alert*/
 
         MapImage mapImageAlert = MapImageFactory.fromResource(context.getResources(),R.drawable.alert);
         MapMarker mapMarkerAlert = new MapMarker(geoCoordinatesAlert);
-        /**Saviour*/
+
         MapImage mapImageSaviour = MapImageFactory.fromResource(context.getResources(),R.drawable.saviour);
         MapMarker mapMarkerSaviour = new MapMarker(geoCoordinatesSaviour);
 
-        /**Alert*/
+        MapImage mapImageLast = MapImageFactory.fromResource(context.getResources(),R.drawable.alert);
+        MapMarker mapMarkerLast = new MapMarker(geoCoordinatesPrevious);
+
         mapMarkerAlert.addImage(mapImageAlert, mapMarkerImageStyle);
         mapView.getMapScene().addMapMarker(mapMarkerAlert);
-        /**Saviour*/
         mapMarkerSaviour.addImage(mapImageSaviour, mapMarkerImageStyle);
         mapView.getMapScene().addMapMarker(mapMarkerSaviour);
 
         routing.addRoute(geoCoordinatesAlert,geoCoordinatesSaviour);
 
     }
+
+
     /**Loads the Route between given co-ordinates*/
  /**   public void addRouteButtonClicked(View view) {
         routing.addRoute(geoCoordinatesAlert,geoCoordinatesSaviour);
 
     }
     /**Clears the route, marker still present on map*/
-    public void clearMapButtonClicked(View view) {
+ /**   public void clearMapButtonClicked(View view) {
         routing.clearMap();
-    }
+    }*/
 
 
 
@@ -273,6 +323,9 @@ public class recent_cards extends AppCompatActivity {
     }
 
     public void updateLocation(String location){
+
+        //Remove previous markers
+        geoCoordinatesLastLocation = geoCoordinatesAlert;
         //Update geocordinatesalert object
         String victimLocation = location;
         Log.d("updateLocation","victimLocation"+victimLocation);
@@ -285,6 +338,10 @@ public class recent_cards extends AppCompatActivity {
 
         geoCoordinatesSaviour = new GeoCoordinates(saviourLatitude, saviourLongitude);
         Log.d("updateLocation","geoCoordinatesSaviour"+geoCoordinatesSaviour);
+
+        routing.clearMap();
     }
+
+
 
 }

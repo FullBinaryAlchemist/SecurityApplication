@@ -11,15 +11,6 @@ import es.dmoral.toasty.Toasty;
 public class IsInternet extends AppCompatActivity {
 
 
-//    public static boolean internetIsConnected() {
-//        try {
-//            String command = "ping -c 1 google.com";
-//            return (Runtime.getRuntime().exec(command).waitFor() == 0);
-//        } catch (Exception e) {
-//            return false;
-//        }
-//    }
-
     public static boolean isNetworkAvaliable(Context ctx) {
         ConnectivityManager connectivityManager = (ConnectivityManager) ctx
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
