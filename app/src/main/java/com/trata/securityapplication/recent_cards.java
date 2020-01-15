@@ -47,7 +47,7 @@ import java.util.TimerTask;
 
 import es.dmoral.toasty.Toasty;
 
-public class recent_cards extends AppCompatActivity {
+public class recent_cards extends AppCompatActivity implements UpdateSaviourCountCallback{
     private static final String TAG = "RecentCards";
     private MapViewLite mapView;
     // private MapStyle mapStyle;
@@ -207,6 +207,8 @@ public class recent_cards extends AppCompatActivity {
 
             }
         });
+
+        EmergencyMessagingService.setUpdateSaviourCountCallback(this);
     }
     //adds Saviour to alerts/{uid}/saviours node on Firebase
     public void addSaviourToAlert(final String uid /*Victim uid*/){
@@ -370,5 +372,20 @@ public class recent_cards extends AppCompatActivity {
         routing.clearMap();
     }
 
+    public void updateSaviourCount(String newText){
+        Log.d(TAG,"updateSaviourCount callback");
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                TextView counttext=findViewById(R.id.saviourCountText);
+                //String newText="Number of Saviours coming to rescue:"+ad.getSaviourcount();
+                Log.d(TAG,newText);
+                counttext.setText(newText.toCharArray(),0,newText.toCharArray().length);
+                Log.d(TAG,"Get text on saviourCount:"+counttext.getText().toString());
+                //counttext.setText(newText.toString());
+            }
+        });
+
+    }
 
 }
