@@ -17,6 +17,7 @@ import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -50,7 +51,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
     private String channelId="999";
     private static HashMap<String,Boolean> subscribed=new HashMap<String, Boolean>(10); //a Hashmap to keep track of all subscribed topics
     String useruid;
-
+    private static UpdateSaviourCountCallback updateSaviourCountCallback;
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // [START_EXCLUDE]
@@ -172,7 +173,17 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         else{
             if(remoteMessage.getData().containsKey("saviourCount")){
                 String count=remoteMessage.getData().get("saviourCount");
-                showSaviourCountNotification(Integer.parseInt(count));
+                String uid=remoteMessage.getData().get("uid");
+                AlertObjects.getAlert(uid).setSaviourcount(count);
+
+                String newText="No of Saviours to rescue:"+count;
+                updateSaviourCountCallback.updateSaviourCount(newText);
+                //show "saviour on the way..." notification only if the person is subscribed to victim topic
+                if(EmergencyMessagingService.subscribed.containsKey("victim_"+uid))
+                    showSaviourCountNotification(Integer.parseInt(count));
+                else
+                    Log.d(TAG,"Not subscribed to victim_"+uid+" so not showing notification");
+
             }
             else if(remoteMessage.getData().containsKey("sendCount")){
                 Log.d(TAG,"sendCount message received");
@@ -217,6 +228,8 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
             }
         }
     }
+
+
     public static void subscribeTopic(final String topic){
         FirebaseMessaging.getInstance().subscribeToTopic(topic)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -351,5 +364,9 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         } finally {
             urlConnection.disconnect();
         }
+    }
+
+    public static void setUpdateSaviourCountCallback(UpdateSaviourCountCallback cb) {
+        updateSaviourCountCallback = cb;
     }
 }

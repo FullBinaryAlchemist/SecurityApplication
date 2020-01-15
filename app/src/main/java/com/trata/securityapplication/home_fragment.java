@@ -368,7 +368,7 @@ public class home_fragment extends Fragment {
 
     }
 
-    public static void startAlertCreation(String uid){
+    public static void startAlertCreation(String uid) throws NullPointerException{
         String formattedSubZone= GetGPSCoordinates.getFormattedZoning(GetGPSCoordinates.getSub_zone());
         final String ddLastKnownLocation =GetGPSCoordinates.getddLastKnownLocation(); //for Location
         ts = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());//timestamp NOTE:was earlier in timestamp function

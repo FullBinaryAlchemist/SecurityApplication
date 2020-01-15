@@ -1,4 +1,8 @@
 package com.trata.securityapplication;
 
-public interface updateSaviourCountCallback {
+import android.content.Context;
+
+public interface UpdateSaviourCountCallback {
+
+    public void updateSaviourCount(String newText);
 }

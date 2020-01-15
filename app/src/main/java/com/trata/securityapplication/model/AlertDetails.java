@@ -7,7 +7,7 @@ public class AlertDetails extends Alert {
     protected String uid;
     protected String imageUrl;
     protected String name;
-
+    protected String saviourcount="0";
     private String TAG="AlertDetails";
 
     public AlertDetails() {
@@ -38,5 +38,14 @@ public class AlertDetails extends Alert {
     public void setName(String name) {
         this.name = name;
         Log.d(TAG,"Settign alertDetail name:"+this.name);
+    }
+
+    public String getSaviourcount() {
+        return saviourcount;
+    }
+
+    public void setSaviourcount(String saviourcount) {
+        Log.d(TAG,"Setting saviourCOunt for "+getUid()+" to "+saviourcount);
+        this.saviourcount = saviourcount;
     }
 }

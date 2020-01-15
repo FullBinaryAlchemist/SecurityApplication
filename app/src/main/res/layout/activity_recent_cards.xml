@@ -18,10 +18,11 @@
         tools:layout_editor_absoluteX="10dp">
 
         <TextView
+            android:id="@+id/saviourCountText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
             android:text="Number of People coming for saving is: "
+            android:textColor="@color/white"
             android:textSize="18sp" />
 
         <TextView
