@@ -171,10 +171,15 @@ public class home_fragment extends Fragment {
                     //change the interval to 1 min.
                     GetGPSCoordinates.speedyLocationRequest();
 
+
                     Intent emergencyintent1=new Intent(getContext(), BackgroundSosPlayerService.class);
 
                     if (c2 != null) {
-                        c2.startService(emergencyintent1);
+                        //play audio only if silen is active
+                        if(sharedPreferences.getBoolean("silen",true))
+                            c2.startService(emergencyintent1);
+                        else
+                            Log.d("home_fragment","startPlaying- playSound is false");
                     }
 
                     Intent emergencyintent2 = new Intent(getContext(), SendSMSService.class);

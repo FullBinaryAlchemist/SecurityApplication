@@ -1,15 +1,21 @@
 package com.trata.securityapplication;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -68,6 +74,8 @@ public class SignUp1Activity extends AppCompatActivity {
     private VerifyEmail verifyEmail;
 
     private String TAG = "SignUp1";
+    private TelephonyManager telephonyManager;
+    private String mImeiNumber;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,8 +188,12 @@ public class SignUp1Activity extends AppCompatActivity {
                         {
 
                             FirebaseUser firebaseUser = firebaseHelper.getFirebaseAuth().getCurrentUser();
+                            getImei();
+                            if (mImeiNumber == null)
+                                deviceId();
+                            else
+                                checkDeviceStatus(firebaseUser,userData);
                             // check is email verified if clicked on signup and send verify email if clicked on verifyBtn
-                            checkIsEmailVerified(firebaseUser,userData);
                         } else
                             {
                             try
@@ -225,7 +237,11 @@ public class SignUp1Activity extends AppCompatActivity {
                             Log.d(TAG, "onComplete: " + (isNew ? "new user" : "old user"));
 
                             FirebaseUser firebaseUser = firebaseHelper.getFirebaseAuth().getCurrentUser();
-                            checkIsEmailVerified(firebaseUser, userData);
+                            getImei();
+                            if (mImeiNumber == null)
+                                deviceId();
+                            else
+                                checkDeviceStatus(firebaseUser,userData);
                         } else {
                             try {
                                 throw task.getException();
@@ -255,6 +271,28 @@ public class SignUp1Activity extends AppCompatActivity {
                 });
     }
 
+    private void checkDeviceStatus(final FirebaseUser firebaseUser, final Hashtable<String,String> userData){
+        // check if last logout was successful or not
+        if (mImeiNumber == null){
+            Toasty.warning(SignUp1Activity.this, "Please provide the mandatory permissons. We need permissions to keep you safe",Toasty.LENGTH_LONG).show();
+            return;
+        }
+        firebaseHelper.getDevicesDatabaseReference().child(mImeiNumber).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()){
+                    Toasty.error(SignUp1Activity.this, "Last logout was unsuccessful on this device. Try to login using the previous Account.", Toast.LENGTH_LONG).show();
+                }else {
+                    checkIsEmailVerified(firebaseUser,userData);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toasty.warning(SignUp1Activity.this, "Please check your connection and try again", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     private void checkIsEmailVerified(FirebaseUser firebaseUser, Hashtable<String,String> userData){
 
@@ -269,7 +307,6 @@ public class SignUp1Activity extends AppCompatActivity {
         }
         else {
             verifyEmail.sendVerificationEmail(SignUp1Activity.this);
-
         }
 
     }
@@ -384,5 +421,44 @@ public class SignUp1Activity extends AppCompatActivity {
         cnfpass_outer.setAlpha((float) 0.6);
         Btn_Submit.setAlpha((float) 0.6);
         Btn_Submit.setText("");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 101:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    deviceId();
+                } else if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
+                    Toasty.warning(this, "Please provide the mandatory permissions. We need permissions to keep you safe.", Toast.LENGTH_SHORT, true).show();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    private void deviceId() {
+        try {
+            Log.d(TAG,"Inside deviceID");
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, 101);
+                return;
+            }
+            else {
+                getImei();
+            }
+        }catch (Exception e){Log.d(TAG,e.getMessage());}
+    }
+
+    private void getImei(){
+        telephonyManager = (TelephonyManager) getSystemService(this.TELEPHONY_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mImeiNumber = telephonyManager.getImei(0);
+            Log.d("IMEI", "IMEI Number of slot 1 is:" + mImeiNumber);
+        }
+        else {
+            mImeiNumber = telephonyManager.getDeviceId();
+        }
     }
 }

@@ -3,9 +3,11 @@ package com.trata.securityapplication;
 import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
 import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.model.User;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -130,6 +132,7 @@ public class GoogleFirebaseSignIn implements Serializable {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                             //Snackbar.make(findViewById(R.layout.activity_main), "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
+                            Toasty.error(activity, "Sign in failed", Toast.LENGTH_SHORT, true).show();
                             setUser(null);
                         }
                     }
@@ -160,7 +163,6 @@ public class GoogleFirebaseSignIn implements Serializable {
             Intent mLogOutAndRedirect = new Intent(activity, MainActivity.class);
             mLogOutAndRedirect.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             activity.startActivity(mLogOutAndRedirect);
-            Toasty.error(activity, "Sign in failed", Toast.LENGTH_SHORT, true).show();
         }
         //finishing the navigation activity
         activity.finish();
@@ -190,15 +192,17 @@ public class GoogleFirebaseSignIn implements Serializable {
                         }
                         else {
                             firebaseHelper.firebaseSignOut(mImeiNumber);
+                            Toasty.error(activity, "Sign in failed", Toast.LENGTH_SHORT, true).show();
                             setUser(null);
-                            Toast.makeText(activity, "Authentication failed :In GoogleFirebaseSignin sqlite error occurred",Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(activity, "Authentication failed :In GoogleFirebaseSignin sqlite error occurred",Toast.LENGTH_SHORT).show();
                             return;
                         }
                     }catch (Exception e){
                         Log.d(TAG,e.getMessage());
                         firebaseHelper.firebaseSignOut(mImeiNumber);
+                        Toasty.error(activity, "Sign in failed", Toast.LENGTH_SHORT, true).show();
                         setUser(null);
-                        Toast.makeText(activity, "Authentication failed :In GoogleFirebaseSignin sqlite error occurred"+e.getMessage(),Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(activity, "Authentication failed :In GoogleFirebaseSignin sqlite error occurred"+e.getMessage(),Toast.LENGTH_SHORT).show();
                         return;
                     }
 //                    Log.d("Paid12345","schin"+user.getName()+ user.isPaid());
@@ -214,8 +218,9 @@ public class GoogleFirebaseSignIn implements Serializable {
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
                     Log.d(TAG,databaseError.getDetails());
-                    Toast.makeText(activity, "Inside storeDataInSql:"+databaseError.getMessage(),Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(activity, "Inside storeDataInSql:"+databaseError.getMessage(),Toast.LENGTH_SHORT).show();
                     firebaseHelper.firebaseSignOut(mImeiNumber);
+                    Toasty.error(activity, "Sign in failed", Toast.LENGTH_SHORT, true).show();
                     setUser(null);
                 }
             });
@@ -224,32 +229,34 @@ public class GoogleFirebaseSignIn implements Serializable {
 
     private void setImeiInFirebase(final FirebaseUser firebaseUser){
 
-        firebaseHelper.getDevicesDatabaseReference().child(mImeiNumber).setValue(firebaseUser.getUid()).addOnSuccessListener(new OnSuccessListener<Void>() {
+        firebaseHelper.getDevicesDatabaseReference().child(mImeiNumber).setValue(firebaseUser.getUid(), new DatabaseReference.CompletionListener() {
             @Override
-            public void onSuccess(Void aVoid) {
-                firebaseHelper.getUsersDatabaseReference().child(firebaseUser.getUid()).child("imei").setValue(mImeiNumber).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        storeDataInSql(firebaseUser);
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        firebaseHelper.makeDeviceImeiNull(mImeiNumber);
-                        Log.d(TAG,e.getMessage());
-                        // sigin out the user
-                        firebaseHelper.firebaseSignOut();
-                        setUser(null);
-                    }
-                });
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(TAG,e.getMessage());
-                // sign out the user
-                firebaseHelper.firebaseSignOut();
-                setUser(null);
+            public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
+                if (databaseError != null){
+                    if (databaseError.getCode() == -3){
+                        Toasty.error(activity, "Last logout was unsuccessful on this device. Try to login using the previous Account.", Toast.LENGTH_LONG).show();
+                    }else Toasty.error(activity, "Sign in failed", Toast.LENGTH_LONG).show();
+                    // sign out the user
+                    firebaseHelper.firebaseSignOut();
+                    setUser(null);
+                }else {
+                    firebaseHelper.getUsersDatabaseReference().child(firebaseUser.getUid()).child("imei").setValue(mImeiNumber, new DatabaseReference.CompletionListener() {
+                        @Override
+                        public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
+                            if (databaseError != null){
+                                if (databaseError.getCode() == -3){
+                                    Toasty.error(activity, "Last logout was unsuccessful on this device. Try to login using the previous Account.", Toast.LENGTH_LONG).show();
+                                }else Toasty.error(activity, "Sign in failed", Toast.LENGTH_LONG).show();
+                                firebaseHelper.makeDeviceImeiNull(mImeiNumber);
+                                // sigin out the user
+                                firebaseHelper.firebaseSignOut();
+                                setUser(null);
+                            }else {
+                                storeDataInSql(firebaseUser);
+                            }
+                        }
+                    });
+                }
             }
         });
     }
