@@ -180,6 +180,7 @@ public class FirebaseHelper {
     public  FirebaseDatabase getFirebaseDatabase() { return mFirebaseDatabase; }
 
     public StorageReference getStorageReference() {return storageReference.child(FirebaseAuth.getInstance().getUid());}
+    public StorageReference getStorageReference_ofuid(String uid) {return storageReference.child(uid).child("images/profile_pic");}
 
     public StorageReference getImageStorageRef() {return storageReference.child("images");}
 

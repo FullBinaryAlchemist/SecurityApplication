@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -247,7 +248,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 alertDetails.setName((String)getIntent().getExtras().get("username"));
                 alertDetails.setLocation((String)getIntent().getExtras().get("liveLocation"));
                 alertDetails.setUid((String)getIntent().getExtras().get("uid"));
-                //TODO Add imageUrl
+                //NOTE: moved the code inside username check
+                // Create a storage reference from our app
+
                 for (String key : getIntent().getExtras().keySet()) {
 
                     Object value = getIntent().getExtras().get(key);
@@ -258,6 +261,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 AlertObjects.setAlertDetail(alertDetails.getUid(),alertDetails);
                 //navigate to Saviour Fragment
                 if(getIntent().getExtras().containsKey("username")) {
+                    StorageReference image_ref=firebaseHelper.getStorageReference_ofuid(alertDetails.getUid());
+                    alertDetails.setImageUrl(image_ref);
+
                     Toast.makeText(this, "putextra", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(MainActivity.this, navigation.class);
                     intent.putExtra("saviour", true);

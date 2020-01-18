@@ -6,6 +6,7 @@ import android.app.ActivityManager;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.DialogInterface;
 import android.media.MediaPlayer;
@@ -27,6 +28,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -40,6 +42,7 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.model.Alert;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Objects;
@@ -56,13 +59,16 @@ public class home_fragment extends Fragment {
     public Button informsafety;
     static public boolean check=false;
     int RC;
+    private ImageButton silen;
+    SharedPreferences sharedPreferences;
     Boolean is_paid = false;//NOTE: DO NOT CHANGE TO TRUE
-    private Alert alertobj;//This is Model Object to push to firebase
-    private FirebaseHelper firebaseHelper= FirebaseHelper.getInstance();
+    private static Alert alertobj;//This is Model Object to push to firebase
+    private static FirebaseHelper firebaseHelper= FirebaseHelper.getInstance();
     //NOTE: Button bt has been removed. Now using Button emergency. Event listeners also moved to emergency
     private static boolean alertExists=false;
     public static int testcount=0; //store the count of saviours when emergency pressed in testmode
-    String ts; //NOTE:was earlier in timestamp function
+    public static Context context;
+    static String ts; //NOTE:was earlier in timestamp function
     Context c2;
     @Nullable
     @Override
@@ -74,11 +80,17 @@ public class home_fragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        context=getActivity().getApplicationContext();
         alert = Objects.requireNonNull(getActivity()).findViewById(R.id.alert);
         emergency = getActivity().findViewById(R.id.emergency);
         informsafety = getActivity().findViewById(R.id.inform);
-
+        silen=getActivity().findViewById(R.id.silen);
+        sharedPreferences=getActivity().getSharedPreferences("trata",Context.MODE_PRIVATE);
+        boolean active=sharedPreferences.getBoolean("silen",true);
+        if(!active)
+            silen.setImageResource(R.drawable.ic_volume_off_black_white_24dp);
+        else
+            silen.setImageResource(R.drawable.ic_volume_up_black_red_24dp);
         firebaseHelper= FirebaseHelper.getInstance(); //NOTE:Added FirebaseHelper
 
         final android.support.v7.widget.Toolbar toolbar1 = (Toolbar) getActivity().findViewById(R.id.toolbar);
@@ -95,7 +107,22 @@ public class home_fragment extends Fragment {
             is_paid=false;
         }
         Log.d("Paid1234hello2","ispaid: "+is_paid);
-
+        silen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean b_active=sharedPreferences.getBoolean("silen",true);
+                SharedPreferences.Editor editor=sharedPreferences.edit();
+            if(b_active) {
+                silen.setImageResource(R.drawable.ic_volume_off_black_white_24dp);
+                editor.putBoolean("silen",false);
+            }
+            else{
+                silen.setImageResource(R.drawable.ic_volume_up_black_red_24dp);
+                editor.putBoolean("silen",true);
+            }
+            editor.commit();
+            }
+        });
         alert.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("ShowToast")
             @Override
@@ -142,10 +169,15 @@ public class home_fragment extends Fragment {
                     //change the interval to 1 min.
                     GetGPSCoordinates.speedyLocationRequest();
 
+
                     Intent emergencyintent1=new Intent(getContext(), BackgroundSosPlayerService.class);
 
                     if (c2 != null) {
-                        c2.startService(emergencyintent1);
+                        //play audio only if silen is active
+                        if(sharedPreferences.getBoolean("silen",true))
+                            c2.startService(emergencyintent1);
+                        else
+                            Log.d("home_fragment","startPlaying- playSound is false");
                     }
 
                     Intent emergencyintent2 = new Intent(getContext(), SendSMSService.class);
@@ -157,23 +189,13 @@ public class home_fragment extends Fragment {
                     EmergencyMessagingService.subscribeTopic("victim_"+uid);
 
                     //check if not test mode.Otherwise don't raise entry on firebase
-                    if(!test){
-
-                        String formattedSubZone= GetGPSCoordinates.getFormattedZoning(GetGPSCoordinates.getSub_zone());
-                        final String ddLastKnownLocation =GetGPSCoordinates.getddLastKnownLocation(); //for Location
-                        ts = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());//timestamp NOTE:was earlier in timestamp function
-
-                        Log.d("home_fragment","Emergency: formattedSubZone:"+formattedSubZone+"\nuid:"+uid+"\nlocation:"+ddLastKnownLocation);
-                        alertobj= new Alert();
-                        alertobj.setLocation(ddLastKnownLocation);
-                        alertobj.setSubzone(formattedSubZone);
-                        alertobj.setTs(ts);
-                        //Temporary code to test saviours live location update
-                        EmergencyMessagingService.subscribeTopic("saviours_"+uid); //TODO:Remove after Saviour fragment complete
-                        //TODO:check whether an Emergency has already been raised by User. If there already exists then don't create another entry
-                        exists(uid,ddLastKnownLocation,true);//creates
-
-
+                    if(!navigation.test){
+                        try {
+                            startAlertCreation(uid);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            Log.d("home_fragment","startAlertCreation error");
+                        }
                     }
                     //Showing testmode count
                     else {
@@ -219,7 +241,7 @@ public class home_fragment extends Fragment {
                 resetTestCount();
 
                 //TODO:check if Alert node exists and it does then delete it 
-                //exists(uid,"",false);
+                exists(uid,"",false);
 
                 try {
 
@@ -315,7 +337,7 @@ public class home_fragment extends Fragment {
         Log.i ("isMyServiceRunning?", false+"");
         return false;
     }
-    public void timeStamp(String uid,String location, String ts){
+    public static void timeStamp(String uid, String location, String ts){
 //        String location=GetGPSCoordinates.getddLastKnownLocation();
         Log.d("alert_history","Alert History working    "+uid);
         ts= TextUtils.join(":", Arrays.asList(ts.split("\\.")));
@@ -327,7 +349,7 @@ public class home_fragment extends Fragment {
                         if(task.isSuccessful()){
                             Log.d("home_fragment_timestamp","Firebase:TimeStamp added in Firebase");
                             try{
-                            Toasty.success(getContext(),"Alert added in FIrebase",Toasty.LENGTH_LONG).show();
+                            Toasty.success(context,"Alert added in FIrebase",Toasty.LENGTH_LONG).show();
                           }
                             catch(Exception e){
                                 Log.d("toasty",e.getMessage());
@@ -337,14 +359,15 @@ public class home_fragment extends Fragment {
 
                         else{
                             Log.d("home_fragment_timestamp","Firebase:TimeStamp NOT ADDED in Firebase");
-                            Toasty.error(getContext(), "Firebase entry failed", Toast.LENGTH_SHORT, true).show();
+                            Toasty.error(context, "Firebase entry failed", Toast.LENGTH_SHORT, true).show();
                         }
                     }
                 });
         ;
     }
 
-    public void exists(String uid, String ddLastKnownLocation,boolean createOrdelete /**Adds if true . Delete if false*/){
+    public static void exists(String uid, String ddLastKnownLocation,boolean createOrdelete /**Adds if true . Delete if false*/){
+        Log.d("Exists","Calling Exists..................");
         firebaseHelper.getAlertsDatabaseReference().child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
@@ -374,7 +397,24 @@ public class home_fragment extends Fragment {
 
     }
 
-    public void addAlert(final String uid, final String ddLastKnownLocation){
+    public static void startAlertCreation(String uid) throws NullPointerException{
+        String formattedSubZone= GetGPSCoordinates.getFormattedZoning(GetGPSCoordinates.getSub_zone());
+        final String ddLastKnownLocation =GetGPSCoordinates.getddLastKnownLocation(); //for Location
+        ts = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());//timestamp NOTE:was earlier in timestamp function
+
+        Log.d("home_fragment","Emergency: formattedSubZone:"+formattedSubZone+"\nuid:"+uid+"\nlocation:"+ddLastKnownLocation);
+        alertobj= new Alert();
+        alertobj.setLocation(ddLastKnownLocation);
+        alertobj.setSubzone(formattedSubZone);
+        alertobj.setTs(ts);
+        //Temporary code to test saviours live location update
+        EmergencyMessagingService.subscribeTopic("saviours_"+uid); //TODO:Remove after Saviour fragment complete
+        //TODO:check whether an Emergency has already been raised by User. If there already exists then don't create another entry
+        Log.d("Exists","Calling Calling Exists..................");
+        exists(uid,ddLastKnownLocation,true);//creates
+    }
+
+    public static void addAlert(final String uid, final String ddLastKnownLocation){
         try {
             firebaseHelper.getAlertsDatabaseReference().child(uid).setValue(alertobj)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -382,25 +422,25 @@ public class home_fragment extends Fragment {
                         public void onComplete(@NonNull Task<Void> task) {
                             if(task.isSuccessful()){
                                 Log.d("home_fragment","Firebase:Alert added in Firebase");
-                                Toasty.success(getActivity().getApplicationContext(),"Alert added in FIrebase",Toasty.LENGTH_LONG).show();
+                                Toasty.success(context,"Alert added in FIrebase",Toasty.LENGTH_LONG).show();
                                 timeStamp(uid,ddLastKnownLocation,ts); //function definition changed to include Timestamp as well
                                 setAlertExists();//sets Alert exists to true
                             }
                             else{
                                 Log.d("home_fragment","Firebase:Alert NOT ADDED in Firebase");
-                                Toasty.error(getActivity().getApplicationContext(), "Firebase entry failed", Toast.LENGTH_SHORT, true).show();
+                                Toasty.error(context, "Firebase entry failed", Toast.LENGTH_SHORT, true).show();
                             }
                         }
                     });
         }catch (Exception e){
             Log.d("home_fragment","Emergency creation on firebase failed");
             e.printStackTrace();
-            Toasty.error(c2, "Emergency creation on firebase failed"+e.getMessage(), Toast.LENGTH_SHORT, true).show();
+            Toasty.error(context, "Emergency creation on firebase failed"+e.getMessage(), Toast.LENGTH_SHORT, true).show();
 
         }
     }
 
-    public void deleteAlert(final String uid){
+    public static void deleteAlert(final String uid){
         try {
             firebaseHelper.getAlertsDatabaseReference().child(uid).setValue(null)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -409,24 +449,33 @@ public class home_fragment extends Fragment {
                             if(task.isSuccessful()){
                                 resetAlertExists(); //Reset the alertExists boolean variable
                                 Log.d("home_fragment","Firebase:Alert Removed from Firebase");
-                                Toasty.success(getActivity().getApplicationContext(),"Alert Removed from FIrebase",Toasty.LENGTH_LONG).show();
+                                Toasty.success(context,"Alert Removed from FIrebase",Toasty.LENGTH_LONG).show();
                             }
                             else{
                                 Log.d("home_fragment","Firebase:Alert NOT REMOVED in Firebase");
-                                Toasty.error(getActivity().getApplicationContext(), "Firebase deletion failed", Toast.LENGTH_SHORT, true).show();
+                                Toasty.error(context, "Firebase deletion failed", Toast.LENGTH_SHORT, true).show();
                             }
                         }
                     });
         }catch (Exception e){
             Log.d("home_fragment","Emergency creation on firebase failed");
             e.printStackTrace();
-            Toasty.error(getActivity().getApplicationContext(), "Emergency creation on firebase failed"+e.getMessage(), Toast.LENGTH_SHORT, true).show();
+            Toasty.error(context, "Emergency creation on firebase failed"+e.getMessage(), Toast.LENGTH_SHORT, true).show();
 
         }
     }
     //TODO:create an HTTP endpoint using cloud function and call that endpoint
     public void sendTestMessage(final String uid){
         Log.d("TestMessage","Will send a test mode message");
+        String topic=EmergencyMessagingService.getTopicString(GetGPSCoordinates.getZone(),GetGPSCoordinates.getSub_zone());
+        String params="?callerUid="+uid+"&targetUid="+uid+"&topic="+topic;
+        Log.d("TestMessage","params:"+params);
+
+        try {
+            EmergencyMessagingService.callUrl(params);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static boolean getAlertExists(){ return alertExists; }

@@ -1,13 +1,17 @@
 package com.trata.securityapplication;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.trata.securityapplication.Helper.FirebaseHelper;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -152,6 +156,10 @@ public class SosPlayer extends Service {
     public void updateCount(int direction){
         Log.d(TAG,"updateCount:");
         if(soskeyscount>=5 && !checkPlaying()){
+            //create Alert on firebase
+            String uid= FirebaseHelper.getInstance().getFirebaseAuth().getUid();
+            home_fragment.startAlertCreation(uid);
+
             Log.d(TAG,"STARTING siren and sms...");
             startPlaying();
             sendSosSMS();
@@ -207,8 +215,14 @@ public class SosPlayer extends Service {
     }
 
     public void startPlaying(){
-        Intent svc=new Intent(this, BackgroundSosPlayerService.class);
-        startService(svc);
+        SharedPreferences preferences= getSharedPreferences("trata", Context.MODE_PRIVATE);
+        boolean playSound=preferences.getBoolean("silen",true);
+        Log.d(TAG,"startPlaying- playSound is "+playSound);
+        if(playSound)
+        {
+            Intent svc=new Intent(this, BackgroundSosPlayerService.class);
+            startService(svc);
+        }
         sosplay=true;
     }
 

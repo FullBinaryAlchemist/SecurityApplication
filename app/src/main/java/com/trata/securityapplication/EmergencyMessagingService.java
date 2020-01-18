@@ -13,9 +13,11 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -23,15 +25,27 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import com.google.firebase.storage.StorageReference;
+
 import com.trata.securityapplication.Helper.FirebaseHelper;
 import com.trata.securityapplication.model.AlertDetails;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
+
+import javax.net.ssl.HttpsURLConnection;
+
 import es.dmoral.toasty.Toasty;
 
 public class EmergencyMessagingService extends FirebaseMessagingService {
@@ -40,7 +54,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
     private String channelId="999";
     private static HashMap<String,Boolean> subscribed=new HashMap<String, Boolean>(10); //a Hashmap to keep track of all subscribed topics
     String useruid;
-
+    private static UpdateSaviourCountCallback updateSaviourCountCallback;
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // [START_EXCLUDE]
@@ -149,6 +163,9 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
             alertDetails.setName((String) remoteMessage.getData().get("username"));
             alertDetails.setLocation((String) remoteMessage.getData().get("liveLocation"));
             alertDetails.setUid((String) remoteMessage.getData().get("uid"));
+            FirebaseHelper firebaseHelper=FirebaseHelper.getInstance();
+            StorageReference storageReference=firebaseHelper.getStorageReference_ofuid((String) remoteMessage.getData().get("uid"));
+            alertDetails.setImageUrl(storageReference);
             for (String key : keys) {
 
                 Object value = remoteMessage.getData().get(key);
@@ -162,11 +179,30 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         else{
             if(remoteMessage.getData().containsKey("saviourCount")){
                 String count=remoteMessage.getData().get("saviourCount");
-                showSaviourCountNotification(Integer.parseInt(count));
+                String uid=remoteMessage.getData().get("uid");
+                AlertObjects.getAlert(uid).setSaviourcount(count);
+
+                String newText="No of Saviours to rescue:"+count;
+                updateSaviourCountCallback.updateSaviourCount(newText);
+                //show "saviour on the way..." notification only if the person is subscribed to victim topic
+                if(EmergencyMessagingService.subscribed.containsKey("victim_"+uid))
+                    showSaviourCountNotification(Integer.parseInt(count));
+                else
+                    Log.d(TAG,"Not subscribed to victim_"+uid+" so not showing notification");
+
             }
             else if(remoteMessage.getData().containsKey("sendCount")){
                 Log.d(TAG,"sendCount message received");
+                String uid=remoteMessage.getData().get("uid");
+                useruid=FirebaseHelper.getInstance().getFirebaseAuth().getUid();
                 //TODO:http call
+                String params="?callerUid="+useruid+"&targetUid="+uid;
+                Log.d(TAG,"params:"+params);
+                try{
+                    callUrl(params);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
             else if(remoteMessage.getData().containsKey("testCount")){
                 Log.d(TAG,"testCount message received");
@@ -185,6 +221,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
                 AlertObjects.getAllAlerts().remove(uid);
                 EmergencyMessagingService.unsubscribeTopic("saviours_"+uid);// unsubscribe to prevent future live updates from receiving
                 //TODO:redirect to saviours fragment and update recycler view and history
+
             }
             else
             {
@@ -198,6 +235,8 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
             }
         }
     }
+
+
     public static void subscribeTopic(final String topic){
         FirebaseMessaging.getInstance().subscribeToTopic(topic)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -309,5 +348,32 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
 
         notificationManager.notify(999, notificationBuilder.build());
 
+    }
+
+    public static void callUrl(String params) throws IOException {
+        Log.d("callUrl","CloudMessagingService called");
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
+        URL url = null;
+        try {
+            url = new URL("https://us-central1-securityapplication-b990e.cloudfunctions.net/testCount"+params);
+            Log.d("callUrl","Url received:"+"https://us-central1-securityapplication-b990e.cloudfunctions.net/testCount"+params);
+        } catch (MalformedURLException e) {
+            Log.d("callUrl","MalformedUrlException");
+            e.printStackTrace();
+            return;
+        }
+        HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
+        try {
+            InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+            Log.d("callUrl","urlConnection called");
+        } finally {
+            urlConnection.disconnect();
+        }
+    }
+
+    public static void setUpdateSaviourCountCallback(UpdateSaviourCountCallback cb) {
+        updateSaviourCountCallback = cb;
     }
 }

@@ -42,7 +42,7 @@ public class saviour_fragment extends Fragment {
     final ArrayList<exampleitem> exampleList = new ArrayList<>();
     ArrayList<exampleitem> exampleList2 = new ArrayList<>();
     List<String> user_list = new ArrayList<>();
-
+    String distance;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -72,6 +72,7 @@ public class saviour_fragment extends Fragment {
         m1=getActivity().findViewById(R.id.card_view);
         m2=getActivity().findViewById(R.id.card_view2);
         HashMap<String, AlertDetails> detail=AlertObjects.getAllAlerts();
+        //Log.d("")
         Toast.makeText(getContext(), detail.toString(), Toast.LENGTH_SHORT).show();
         Set<String> key_set=detail.keySet();
 
@@ -83,7 +84,13 @@ public class saviour_fragment extends Fragment {
                 if(name!=null) {
                     String location = ad.getLocation();
                     String user_location = GetGPSCoordinates.getddLastKnownLocation();
-                    String distance = calculatedistance(location, user_location);
+                    if(location!=null && user_location!=null) {
+                       distance = calculatedistance(location, user_location);
+                    }
+                    else{
+                        Log.d("locatinvalue",location+" "+user_location);
+                        distance="50";
+                    }
                     //float distance = locationA.distanceTo(locationB);
                     Toast.makeText(getContext(), "active is running", Toast.LENGTH_SHORT).show();
                     user_list.add(key);
