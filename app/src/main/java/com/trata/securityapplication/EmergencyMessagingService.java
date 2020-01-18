@@ -1,5 +1,6 @@
 package com.trata.securityapplication;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -39,6 +40,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.function.BiConsumer;
 
 import androidx.work.OneTimeWorkRequest;
@@ -174,6 +178,9 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
             }
             //TODO:check if victim uid same as user uid. In that case don't add to AlertObject
             AlertObjects.setAlertDetail(alertDetails.getUid(), alertDetails);
+            //do destroy after 30 min
+            someFunctino(alertDetails.getUid());
+
 
         }
         else{
@@ -375,5 +382,20 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
 
     public static void setUpdateSaviourCountCallback(UpdateSaviourCountCallback cb) {
         updateSaviourCountCallback = cb;
+    }
+    public void someFunctino(String uid) {
+        // set the timeout
+        // this will stop this function in 30 minutes
+        Log.d("sa1234567","just start");
+        long in30Minutes = 30 * 60 * 1000;
+        Timer timer = new Timer();
+        timer.schedule( new TimerTask(){
+            public void run() {
+                AlertObjects.alerts.remove(uid);
+            }
+        },  in30Minutes );
+
+        // do the work...
+        Log.d("EmergencyMessagging","remove called ");
     }
 }

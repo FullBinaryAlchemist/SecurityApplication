@@ -30,6 +30,7 @@
                android:layout_marginEnd="10dp"
                android:layout_alignTop="@+id/emergency"
                android:background="@null"
+               android:padding="7dp"
                android:backgroundTint="#ffffffff"
                android:layout_alignRight="@+id/emergency"
                android:elevation="20dp"
