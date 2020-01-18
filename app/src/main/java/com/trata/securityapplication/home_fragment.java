@@ -6,6 +6,7 @@ import android.app.ActivityManager;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.DialogInterface;
 import android.media.MediaPlayer;
@@ -27,6 +28,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -57,6 +59,8 @@ public class home_fragment extends Fragment {
     public Button informsafety;
     static public boolean check=false;
     int RC;
+    private ImageButton silen;
+    SharedPreferences sharedPreferences;
     Boolean is_paid = false;//NOTE: DO NOT CHANGE TO TRUE
     private static Alert alertobj;//This is Model Object to push to firebase
     private static FirebaseHelper firebaseHelper= FirebaseHelper.getInstance();
@@ -80,7 +84,13 @@ public class home_fragment extends Fragment {
         alert = Objects.requireNonNull(getActivity()).findViewById(R.id.alert);
         emergency = getActivity().findViewById(R.id.emergency);
         informsafety = getActivity().findViewById(R.id.inform);
-
+        silen=getActivity().findViewById(R.id.silen);
+        sharedPreferences=getActivity().getSharedPreferences("trata",Context.MODE_PRIVATE);
+        boolean active=sharedPreferences.getBoolean("silen",true);
+        if(!active)
+            silen.setImageResource(R.drawable.ic_volume_off_black_white_24dp);
+        else
+            silen.setImageResource(R.drawable.ic_volume_up_black_red_24dp);
         firebaseHelper= FirebaseHelper.getInstance(); //NOTE:Added FirebaseHelper
 
         final android.support.v7.widget.Toolbar toolbar1 = (Toolbar) getActivity().findViewById(R.id.toolbar);
@@ -97,7 +107,22 @@ public class home_fragment extends Fragment {
             is_paid=false;
         }
         Log.d("Paid1234hello2","ispaid: "+is_paid);
-
+        silen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean b_active=sharedPreferences.getBoolean("silen",true);
+                SharedPreferences.Editor editor=sharedPreferences.edit();
+            if(b_active) {
+                silen.setImageResource(R.drawable.ic_volume_off_black_white_24dp);
+                editor.putBoolean("silen",false);
+            }
+            else{
+                silen.setImageResource(R.drawable.ic_volume_up_black_red_24dp);
+                editor.putBoolean("silen",true);
+            }
+            editor.commit();
+            }
+        });
         alert.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("ShowToast")
             @Override
