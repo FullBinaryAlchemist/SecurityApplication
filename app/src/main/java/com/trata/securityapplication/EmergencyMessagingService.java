@@ -392,6 +392,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         timer.schedule( new TimerTask(){
             public void run() {
                 AlertObjects.alerts.remove(uid);
+                Log.d("EmergencyMessagging","remove called 3");
             }
         },  in30Minutes );
 
