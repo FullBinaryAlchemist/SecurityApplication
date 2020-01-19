@@ -51,7 +51,8 @@ import es.dmoral.toasty.Toasty;
 public class EmergencyMessagingService extends FirebaseMessagingService {
     private static final String TAG="CloudMessagingService";
     private RemoteMessage remoteMessage;
-    private String channelId="999";
+    private String saviourChannelId="999";
+    private String alertChannelId="666";
     private static HashMap<String,Boolean> subscribed=new HashMap<String, Boolean>(10); //a Hashmap to keep track of all subscribed topics
     String useruid;
     private static UpdateSaviourCountCallback updateSaviourCountCallback;
@@ -154,10 +155,13 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "Short lived task is done.");
 
         String keys[]= {"username","liveLocation","uid"};
+        //OLD:
         // Check if message contains a notification payload.
         //If it is a notification message then it contains first time alert
+        //NEW(CURRENT):
+        //Alert will be sent as a data message so receive it and call showAlertNotification
         //else it is an update message so an AlertDetail must exist.So update it
-        if (remoteMessage.getNotification() != null && !remoteMessage.getData().containsKey("safe")) {
+        if (remoteMessage.getData().containsKey("username") && !remoteMessage.getData().containsKey("safe")) {
             AlertDetails alertDetails = new AlertDetails();
 
             alertDetails.setName((String) remoteMessage.getData().get("username"));
@@ -174,7 +178,8 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
             }
             //TODO:check if victim uid same as user uid. In that case don't add to AlertObject
             AlertObjects.setAlertDetail(alertDetails.getUid(), alertDetails);
-
+            //show Notification
+            showAlertNotfication(alertDetails.getName());
         }
         else{
             if(remoteMessage.getData().containsKey("saviourCount")){
@@ -323,7 +328,19 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         if(count==0){
             messageBody="Alerted Saviours nearby. Stay strong !";
         }
+        //NOTE:Refactored to other method
+        showNotification(title,messageBody,true,Integer.parseInt(saviourChannelId));
+    }
 
+    //shows incoming alert message notification
+    public void showAlertNotfication(String name){
+        String title="Emergency";
+        String messageBody= name+ " needs your help";
+        showNotification(title,messageBody,false,Integer.parseInt(alertChannelId));
+    }
+
+    public void showNotification(String title,String messageBody, boolean persistent, int id){
+        String channelId=Integer.toString(id);
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
@@ -332,7 +349,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
                         .setPriority(Notification.PRIORITY_HIGH)
                         .setContentTitle(title)
                         .setContentText(messageBody)
-                        .setOngoing(true);
+                        .setOngoing(persistent);
 
 
         NotificationManager notificationManager =
@@ -346,7 +363,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
             notificationManager.createNotificationChannel(channel);
         }
 
-        notificationManager.notify(999, notificationBuilder.build());
+        notificationManager.notify(id, notificationBuilder.build());
 
     }
 
