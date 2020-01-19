@@ -41,6 +41,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".navigation"
+            android:hardwareAccelerated="false"
             android:screenOrientation="portrait" />
         <activity
             android:name=".ResetPasswordActivity"

@@ -7,7 +7,7 @@ import com.trata.securityapplication.model.AlertDetails;
 import java.util.HashMap;
 
 public class AlertObjects {
-    protected static HashMap<String, AlertDetails> alerts= new HashMap<String, AlertDetails>();
+    public static HashMap<String, AlertDetails> alerts= new HashMap<String, AlertDetails>();
 
     //adds a AlertDetail with key as the uid of the victim
     public static void setAlertDetail(String uid,AlertDetails alert){

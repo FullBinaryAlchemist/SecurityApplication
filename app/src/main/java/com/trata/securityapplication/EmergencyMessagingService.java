@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -121,6 +122,10 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
                     if(remoteMessage.getData().containsKey("safe")){
                         String username=(String) remoteMessage.getData().get("username");
                         Toasty.success(getBaseContext(),username+" is now safe.Thanks for your help!",Toasty.LENGTH_LONG).show();
+                        SharedPreferences sharedPreferences=getSharedPreferences("TRATA",MODE_PRIVATE);
+                        SharedPreferences.Editor editor=sharedPreferences.edit();
+                        editor.putBoolean("move",true);
+                        editor.commit();
                     }
                     else
                     {
@@ -391,7 +396,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         Timer timer = new Timer();
         timer.schedule( new TimerTask(){
             public void run() {
-                AlertObjects.alerts.remove(uid);
+                AlertObjects.getAllAlerts().remove(uid);
                 Log.d("EmergencyMessagging","remove called 3");
             }
         },  in30Minutes );

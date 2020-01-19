@@ -174,7 +174,7 @@ if(exampleList.size()==0) {
     }
 
     private void history(String name, String date) {
-        exampleList2.add(new exampleitem(name, "Date: "+date));
+        exampleList2.add(new exampleitem(name.substring(1), "Date: "+date));
     }
 
 }

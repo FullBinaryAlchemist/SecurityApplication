@@ -122,11 +122,15 @@ public class SQLiteDBHelper extends SQLiteOpenHelper {
     public HashMap<String,String> fetch_history(){
         HashMap<String,String> list=new HashMap<>();
         try {
+            int i=0;
             Cursor cursor = db.rawQuery("select * FROM history ORDER BY ID ASC", null);
             Log.d("Paid1234hello9", "noofrow" + cursor.getCount());
             if (cursor.getCount() > 0) {
                 while (cursor.moveToNext()) {
-                    list.put(cursor.getString(cursor.getColumnIndex("NAME")), cursor.getString(cursor.getColumnIndex("DATE")));
+                    list.put(i+cursor.getString(cursor.getColumnIndex("NAME")), cursor.getString(cursor.getColumnIndex("DATE")));
+                    i++;
+                    if(i==9)
+                        i=0;
                 }
             }
             Log.d("hashmapsacin",list.toString());

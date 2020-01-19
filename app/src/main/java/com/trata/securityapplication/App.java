@@ -26,7 +26,7 @@ public class App extends Application {
         remoteConfigDefaults.put(ForceUpdateChecker.KEY_UPDATE_REQUIRED, false);
         remoteConfigDefaults.put(ForceUpdateChecker.KEY_CURRENT_VERSION, "1.0");
         remoteConfigDefaults.put(ForceUpdateChecker.KEY_UPDATE_URL,
-                "https://play.google.com/store/apps/details?id=com.example.securityapplication");
+                "https://play.google.com/store/apps/details?id=com.trata.securityapplication");
 
         firebaseRemoteConfig.setDefaults(remoteConfigDefaults);
         firebaseRemoteConfig.fetch(1)// fetch every minutes

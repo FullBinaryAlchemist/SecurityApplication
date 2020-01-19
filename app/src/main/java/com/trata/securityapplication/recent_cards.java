@@ -3,6 +3,7 @@ package com.trata.securityapplication;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -25,6 +26,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 import com.here.sdk.core.Anchor2D;
 import com.here.sdk.core.GeoCoordinates;
@@ -42,6 +49,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -57,7 +65,7 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
     public static double saviourLatitude;
     public static double victimLongitude;
     public static double victimLatitude;
-
+    private SharedPreferences sharedPreferences;
     public static double alertLongitude;
     public static double alertLatitude;
 
@@ -74,11 +82,11 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
     String zone,sub_zone;
     private Routing routing;
     Timer timer = new Timer();
-    TimerTask task;
+    TimerTask task,task2;
     private AlertDetails ad;
     MapMarker mapMarkerAlert;
     MapImage mapImageAlert;
-
+    boolean m_move=false;
     public static void setSaviourLocation(double latitude, double longitude) {
         saviourLatitude = latitude;
         saviourLongitude = longitude;
@@ -92,6 +100,10 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
         setContentView(R.layout.activity_recent_cards);
         profile_image=findViewById(R.id.imageView3);
         View nestedScrollView = (View) findViewById(R.id.nestedScrollView);
+        sharedPreferences=getSharedPreferences("TRATA",MODE_PRIVATE);
+        SharedPreferences.Editor editor=sharedPreferences.edit();
+        editor.putBoolean("move",false);
+        editor.commit();
         bottomSheetBehavior = BottomSheetBehavior.from(nestedScrollView);
         String uid=getIntent().getStringExtra("uid");
         HashMap<String, AlertDetails> detail=AlertObjects.getAllAlerts();
@@ -181,6 +193,8 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
                 addSaviourToAlert(ad.getUid());
                 EmergencyMessagingService.subscribeTopic("saviours_"+ad.getUid()); //subscribing to topic saviours_#uidVictim to receive live location updates
                 //TODO:Remove reject option and updateUI
+                accept.setVisibility(View.GONE);
+                decline.setVisibility(View.GONE);
             }
         });
         //TODO: Remove the alertDetail object and key from AlertObjects . Update the history of the user on firebase and in local database:SEEN
@@ -209,6 +223,50 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
         });
 
         EmergencyMessagingService.setUpdateSaviourCountCallback(this);
+        task2 = new TimerTask() {
+            @Override
+            public void run() {
+                //TODO:update geoCoordinates for victim and saviour and
+                // Fetch the image of victim if distance is less than 100m and UpdateUI
+
+                if(sharedPreferences.getBoolean("move",false) && m_move)
+                {
+                    Log.d("recent_cards","move to saviour");
+                    Date date = new Date();
+                    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+                    String strDate= formatter.format(date);
+                    mydb.addhistory(ad.getName(),strDate);
+                    Intent intent=new Intent(recent_cards.this,navigation.class);
+                    intent.putExtra("saviour",true);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                }else {
+                    Log.d("recent_cards","not move to saviour");
+                }
+            }
+        };
+        timer.schedule(task2,500, 10000);
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+        FirebaseHelper.getInstance().getAlertsDatabaseReference().child(ad.getUid()).child("saviours").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if (snapshot.hasChild(Objects.requireNonNull(FirebaseAuth.getInstance().getUid()))) {
+                    // run some code
+                    Log.d("recent_cards","saviour");
+                    accept.setVisibility(View.GONE);
+                    decline.setVisibility(View.GONE);
+                }else {
+                    Log.d("recent_cards"," not saviour");
+                 Log.d("recent_cards",FirebaseAuth.getInstance().getUid());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
     //adds Saviour to alerts/{uid}/saviours node on Firebase
     public void addSaviourToAlert(final String uid /*Victim uid*/){
@@ -229,6 +287,19 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
                         }
 
                         else{
+                            AlertObjects.getAllAlerts().remove(uid);
+                            Log.d("saviour"," Alert#"+uid+" was removed from the alerts hashmap");
+                            //update history
+                            Date date = new Date();
+                            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+                            String strDate= formatter.format(date);
+                            mydb.addhistory(ad.getName(),strDate);
+                            //close this activity and recycler view should be updated
+                            Intent intent=new Intent(recent_cards.this,navigation.class);
+                            intent.putExtra("saviour",true);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                            finish();
                             Log.d("Saviour","Saviour NOT added to firebase for alert Uid#"+uid);
                             Toasty.error(getApplicationContext(), "Saviour NOT added to firebase for alert Uid#"+uid, Toast.LENGTH_SHORT, true).show();
                         }
@@ -278,6 +349,12 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
                                 //TODO:update geoCoordinates for victim and saviour and
                                 // Fetch the image of victim if distance is less than 100m and UpdateUI
                                 ad = AlertObjects.getAlert(ad.getUid());
+                                if(ad==null)
+                                {
+                                    task.cancel();
+                                    return;
+
+                                }
                                 updateLocation(ad.getLocation());
                                 Log.d("run","loading Map Scene");
                                 loadMarker(mapMarkerImageStyle);
@@ -330,18 +407,22 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
 
     @Override
     protected void onPause() {
+        m_move=false;
+
         super.onPause();
         mapView.onPause();
     }
 
     @Override
     protected void onResume() {
+        m_move=true;
         super.onResume();
         mapView.onResume();
     }
 
     @Override
     protected void onDestroy() {
+        task2.cancel();
         super.onDestroy();
         mapView.onDestroy();
     }
