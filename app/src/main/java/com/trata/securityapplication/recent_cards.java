@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
@@ -47,13 +49,17 @@ import com.trata.securityapplication.model.AlertDetails;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import es.dmoral.toasty.Toasty;
+
+import static java.lang.Thread.sleep;
 
 public class recent_cards extends AppCompatActivity implements UpdateSaviourCountCallback{
     private static final String TAG = "RecentCards";
@@ -79,14 +85,17 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
     GeoCoordinates geoCoordinatesLastLocation;
     LinearLayout linearLayout;
     BottomSheetBehavior bottomSheetBehavior;
-    String zone,sub_zone;
+    String zone,sub_zone,user_location,victim_location,distance_inbetween;
+    private int distance_integer=1000;
     private Routing routing;
+    private boolean image_downloaded=false;
+    private Bitmap bitmap_profile;
     Timer timer = new Timer();
-    TimerTask task,task2;
+    TimerTask task,task2,task3;
     private AlertDetails ad;
     MapMarker mapMarkerAlert;
     MapImage mapImageAlert;
-    boolean m_move=false;
+    boolean m_move=false,show_image=false;
     public static void setSaviourLocation(double latitude, double longitude) {
         saviourLatitude = latitude;
         saviourLongitude = longitude;
@@ -113,12 +122,15 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
         Log.d("victimLocation","---"+victimLocation);
         AlertDetails ad=detail.get(uid);
         StorageReference image_ref=ad.getImageUrl();
+
         image_ref.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
                 // Use the bytes to display the image
                 Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                profile_image.setImageBitmap(bitmap);
+                //profile_image.setImageBitmap(bitmap);
+                bitmap_profile=bitmap;
+                image_downloaded=true;
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -126,6 +138,7 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
                 // Handle any errors
             }
         });
+
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
@@ -226,9 +239,6 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
         task2 = new TimerTask() {
             @Override
             public void run() {
-                //TODO:update geoCoordinates for victim and saviour and
-                // Fetch the image of victim if distance is less than 100m and UpdateUI
-
                 if(sharedPreferences.getBoolean("move",false) && m_move)
                 {
                     Log.d("recent_cards","move to saviour");
@@ -267,6 +277,34 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
 
             }
         });
+
+        new Thread() {
+            boolean threa_image=true;
+            public void run() {
+                while (threa_image) {
+                    try {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(show_image)
+                                    {
+                                        Log.d("innnnn","showed_thread");
+                                        profile_image.setImageBitmap(bitmap_profile);
+                                        threa_image=false;
+
+                                    }
+                                Log.d("innnnn","showed_thread_not image found");
+                            }
+                        });
+                        Thread.sleep(30*1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Log.d("innnnn","showed_thread_not image found2");
+            }
+
+        }.start();
     }
     //adds Saviour to alerts/{uid}/saviours node on Firebase
     public void addSaviourToAlert(final String uid /*Victim uid*/){
@@ -355,7 +393,23 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
                                     return;
 
                                 }
+                                user_location=GetGPSCoordinates.getddLastKnownLocation();
+                                victim_location=ad.getLocation();
+                                if(user_location!=null && victim_location!=null)
+                                {
+                                    distance_inbetween=calculatedistance(user_location,victim_location);
+                                    distance_integer=Integer.valueOf(distance_inbetween);
+                                    Log.d("distance_integer",distance_inbetween);
+                                    if(distance_integer<250 && image_downloaded){
+                                        //profile_image.setImageBitmap(bitmap_profile);
+                                        show_image=true;
+                                    }
+
+                                }
+
+
                                 updateLocation(ad.getLocation());
+
                                 Log.d("run","loading Map Scene");
                                 loadMarker(mapMarkerImageStyle);
                         }
@@ -373,6 +427,7 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
         });
 
     }
+
 
     void loadMarker(MapMarkerImageStyle mapMarkerImageStyle){
         //Update the marker
@@ -468,5 +523,19 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
         });
 
     }
+    private String calculatedistance(String location,String user_location){
+        List<String> t_loc = Arrays.asList(location.split(","));
+        List<String> u_loc = Arrays.asList(user_location.split(","));
+        Location targetLocation = new Location("");//provider name is unnecessary
+        targetLocation.setLatitude(Double.valueOf(t_loc.get(0)));//your coords of course
+        targetLocation.setLongitude(Double.valueOf(t_loc.get(1)));
+        Location myLocation = new Location("");//provider name is unnecessary
+        myLocation.setLatitude(Double.valueOf(u_loc.get(0)));//your coords of course
+        myLocation.setLongitude(Double.valueOf(u_loc.get(1)));
+        float distanceInMeters =  targetLocation.distanceTo(myLocation);
+        Log.d("distance_integer",(int)distanceInMeters+" ");
+        return String.valueOf((int) distanceInMeters);
+    }
+
 
 }
