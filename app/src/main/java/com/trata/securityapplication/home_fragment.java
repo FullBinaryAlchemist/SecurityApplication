@@ -131,6 +131,12 @@ public class home_fragment extends Fragment {
             public void onClick(View v) {
                 Animation alert_anim=AnimationUtils.loadAnimation(getContext(),R.anim.btn_anim);
                 alert.startAnimation(alert_anim);
+                alert.setEnabled(false);
+                //silen.setEnabled(true);
+                ((navigation)getActivity()).tmode1.setEnabled(false);
+                alert.setAlpha(0.6f);
+               // silen.setAlpha(0.6f);
+                ((navigation)getActivity()).tmode1.setAlpha(0.6f);
                 if(!checkSMSPermission()) {
 
                 }
@@ -160,7 +166,18 @@ public class home_fragment extends Fragment {
                 final Animation myAnim = AnimationUtils.loadAnimation(getContext(), R.anim.btn_anim);
                 emergency.startAnimation(myAnim);
                 if (is_paid || true) { //temporarily made ALWAYS TRUE
-
+//                    alert.setVisibility(View.INVISIBLE);
+//                    silen.setVisibility(View.INVISIBLE);
+//                    ((navigation)getActivity()).tmode1.setVisibility(View.INVISIBLE);
+//                    emergency.setVisibility(View.INVISIBLE);
+                    alert.setEnabled(false);
+                    silen.setEnabled(false);
+                    ((navigation)getActivity()).tmode1.setEnabled(false);
+                    emergency.setEnabled(false);
+                    alert.setAlpha(0.6f);
+                    silen.setAlpha(0.6f);
+                    ((navigation)getActivity()).tmode1.setAlpha(0.6f);
+                    emergency.setAlpha(0.6f);
                     //Toasty.info(getContext(), "You are Premium member", Toast.LENGTH_SHORT, true).show(); //Commented-out
 
                     //Code: TO play siren and send emergency message and alert
@@ -232,7 +249,18 @@ public class home_fragment extends Fragment {
             public void onClick(View v) {
                 Animation inf_anim=AnimationUtils.loadAnimation(getContext(),R.anim.btn_anim);
                 informsafety.startAnimation(inf_anim);
-
+//                alert.setVisibility(View.VISIBLE);
+//                silen.setVisibility(View.VISIBLE);
+//                ((navigation)getActivity()).tmode1.setVisibility(View.VISIBLE);
+//                emergency.setVisibility(View.VISIBLE);
+                alert.setEnabled(true);
+                silen.setEnabled(true);
+                ((navigation)getActivity()).tmode1.setEnabled(true);
+                emergency.setEnabled(true);
+                alert.setAlpha(1f);
+                silen.setAlpha(1f);
+                ((navigation)getActivity()).tmode1.setAlpha(1f);
+                emergency.setAlpha(1f);
                 //unsubscribe after inform safety has been pressed. This way Saviour count will no longer be received. So notification will be cancelled
                 String uid=firebaseHelper.getFirebaseAuth().getUid();
                 EmergencyMessagingService.unsubscribeTopic("victim_"+uid);
