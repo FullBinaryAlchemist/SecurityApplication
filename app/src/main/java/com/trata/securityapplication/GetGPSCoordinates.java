@@ -59,6 +59,7 @@ public class GetGPSCoordinates extends Service {
     private static long locationreq_speedy;
 
     private String uid;//storees uid
+    private String prevTopic=null;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -241,7 +242,10 @@ public class GetGPSCoordinates extends Service {
 
         //Example to subscribe to a single zone
         String topic_example=EmergencyMessagingService.getTopicString(getZone(),getSub_zone());
-        EmergencyMessagingService.subscribeTopic(topic_example);
+        //check if topic same as last location topic. If it then don't re-subscribe
+        Log.d("GetGPSService","Old topic:"+prevTopic+" New topic:"+topic_example);
+        if(prevTopic==null || !prevTopic.equals(topic_example))
+        {EmergencyMessagingService.subscribeTopic(topic_example);
 
         //Unsubscribing from previous zones
         for(int i=0;i<ZoneFetching.getCount();i++){
@@ -259,6 +263,11 @@ public class GetGPSCoordinates extends Service {
             EmergencyMessagingService.subscribeTopic(topic);
             Log.d("Subscription","Subscribed to topic"+topic);
             //Toasty.info(getApplicationContext(),"Subscribed to topic"+topic,Toasty.LENGTH_SHORT).show();
+        }
+
+        prevTopic=topic_example;
+        }else{
+            Log.d("GetGPSService","Old topic and new topic is same");
         }
 
     }
