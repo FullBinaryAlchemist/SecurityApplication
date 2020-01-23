@@ -8,74 +8,34 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:534786616869:android:5a8c0e7e37d212d0",
+        "mobilesdk_app_id": "1:534786616869:android:322500780ec473eb3a59cc",
         "android_client_info": {
-          "package_name": "com.example.securityapplication"
+          "package_name": "com.trata.securityapplication"
         }
       },
       "oauth_client": [
         {
-          "client_id": "534786616869-8klolugqqr8mn1canrfjut2ru5at17dg.apps.googleusercontent.com",
+          "client_id": "534786616869-enkm2cpfe9j2b1mi2m7ssplluaeu8ejd.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.securityapplication",
-            "certificate_hash": "ea408956bf5a0b70210960df63e29f1f755d9708"
-          }
-        },
-        {
-          "client_id": "534786616869-rieukiebaget8v0vmspbevtb6f3ch02l.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.securityapplication",
-            "certificate_hash": "c133cb0f12756d4ba1d8427ea546831a6dc5bb7a"
-          }
-        },
-        {
-          "client_id": "534786616869-ndb46cnf5qfrjifh2o59llmq97f704pk.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.securityapplication",
-            "certificate_hash": "01d6865bc785e15c48b6dd3c993d789c35f4237a"
-          }
-        },
-        {
-          "client_id": "534786616869-41nq9t5m26rra7fnirj9sm7cukn94vst.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.securityapplication",
-            "certificate_hash": "80045fe2a778a3d1ffc2848df034b66c1ab84b73"
-          }
-        },
-        {
-          "client_id": "534786616869-dj480jqoqd5ien1897od9ire090ustcm.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.securityapplication",
-            "certificate_hash": "008a3be7549fddd9f1ff3420026600e2bdd85d5a"
-          }
-        },
-        {
-          "client_id": "534786616869-4ddutui53c8r9le9f2gsm3864dnp0fs3.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.securityapplication",
-            "certificate_hash": "a4de9fb6c0376e7ebb3f41e31b6edcad39a047b1"
-          }
-        },
-        {
-          "client_id": "534786616869-6as3af2rd5j400igk8ujogk03mrnbka7.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.securityapplication",
+            "package_name": "com.trata.securityapplication",
             "certificate_hash": "fe2d802ba81addbd333f5195cd2c612ee62c7513"
           }
         },
         {
-          "client_id": "534786616869-e84g7iodmod01e4ii1ucqsq56bt3259s.apps.googleusercontent.com",
+          "client_id": "534786616869-t3ekphrbc5jqcl4njrivn8u3uol74td7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.securityapplication",
-            "certificate_hash": "bd349899d3a17fd6cd3d350f4ff3767fc4cece41"
+            "package_name": "com.trata.securityapplication",
+            "certificate_hash": "666c248895d6100cf4b7231e22fc632e050a8be6"
+          }
+        },
+        {
+          "client_id": "534786616869-d543vh86nfvisumhcl8vptkup5266a4i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.trata.securityapplication",
+            "certificate_hash": "01d6865bc785e15c48b6dd3c993d789c35f4237a"
           }
         },
         {

@@ -16,28 +16,45 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:gravity="center">
+       <RelativeLayout
+           android:layout_width="match_parent"
+           android:layout_marginTop="50dp"
+           android:layout_height="wrap_content"
+           >
+           <ImageButton
+               android:id="@+id/silen"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:layout_toRightOf="@+id/emergency"
+               android:layout_marginTop="0dp"
+               android:src="@drawable/ic_volume_up_black_red_24dp"
+               android:background="@null"
+               android:padding="7dp"
+               android:backgroundTint="#ffffffff"
+               android:elevation="20dp"
+               />
 
-        <Button
-            android:id="@+id/emergency"
-            android:layout_marginTop="50dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/buttonshape"
-            android:layout_marginBottom="40dp"
-            android:elevation="10dp"
-            android:padding="15dp"
-            android:shadowColor="@color/shadow"
-            android:shadowDx="0"
-            android:shadowDy="0"
-            android:shadowRadius="5"
-            android:text="Emergency"
-            android:textColor="#ffffff"
-            android:textSize="25dp"
-            android:translationZ="10dp"
-            />
+           <Button
+               android:id="@+id/emergency"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:layout_marginTop="20dp"
+               android:layout_centerHorizontal="true"
+               android:layout_marginBottom="30dp"
+               android:background="@drawable/buttonshape"
+               android:elevation="10dp"
+               android:padding="15dp"
+               android:shadowColor="@color/shadow"
+               android:shadowDx="0"
+               android:shadowDy="0"
+               android:shadowRadius="5"
+               android:text="Emergency"
+               android:textColor="#ffffff"
+               android:textSize="25dp"
+               android:translationZ="10dp" />
 
 
-
+       </RelativeLayout>
 
         <Button
             android:id="@+id/alert"
@@ -71,7 +88,8 @@
             android:textColor="#FCFEFF"
             android:textSize="20sp"
             />
-    </LinearLayout>
+
+   </LinearLayout>
 
 
 </android.support.constraint.ConstraintLayout>

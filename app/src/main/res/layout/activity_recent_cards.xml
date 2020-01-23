@@ -1,107 +1,177 @@
 
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
-    android:background="@mipmap/back"
-    android:padding="10dp"
+    android:padding="0dp"
     android:paddingBottom="0dp">
-
-
-
-    <FrameLayout
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+   >
+    <LinearLayout
+        android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
+        android:background="#dd007CB6"
+        tools:layout_editor_absoluteX="10dp">
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:text="MAP BLOCK"
-            android:textAlignment="center"
-            android:textColor="@color/white"
-            android:textSize="36dp">
+            android:id="@+id/saviourCountText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Number of People coming for saving is: "
+            android:textColor="#fff"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-        </TextView>
+        <!--<TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#fff"
+            android:textSize="18sp"
+            android:textStyle="bold" />-->
+    </LinearLayout>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
+
+        <com.here.sdk.mapviewlite.MapViewLite
+            android:id="@+id/map_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+         <!--   <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="500dp"
+                android:layout_marginBottom="32dp"
+                android:onClick="addRouteButtonClicked"
+                android:text="Add Route" /> -->
+
+         <!--   <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="200dp"
+                android:layout_marginTop="500dp"
+                android:layout_weight="1"
+                android:onClick="clearMapButtonClicked"
+                android:text="Clear Map" /> -->
+        </com.here.sdk.mapviewlite.MapViewLite>
+    </android.support.constraint.ConstraintLayout>
+</LinearLayout>
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="5dp"
+        android:paddingBottom="15dp"
+        android:background="#dd007CB6"
+        android:clipToPadding="true"
+        app:behavior_hideable="false"
+        app:behavior_peekHeight="350dp"
+        app:layout_behavior="@string/bottom_sheet_behavior">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="9dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="center_horizontal"
+        >
 
         <TextView
             android:id="@+id/text1"
-            android:layout_width="120dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="320dp"
-            android:textColor="@color/white"
-            android:layout_marginLeft="40dp"
-            android:layout_marginRight="200dp"
-
-            android:text="Name:"
+            android:text="Name: "
             android:textAlignment="textEnd"
-            android:textSize="20dp"
-            android:textStyle="bold">
-        </TextView>
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/text2"
-            android:layout_width="120dp"
-            android:layout_height="25dp"
-            android:textColor="@color/white"
-            android:layout_marginLeft="160dp"
-            android:layout_marginTop="322dp"
-
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Name Status"
-            android:textAlignment="center">
+            android:textColor="@color/white"
+            android:textSize="20sp" />
+    </LinearLayout>
 
-        </TextView>
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:layout_marginLeft="0dp"
-            android:layout_marginTop="380dp"
-
-            android:fadingEdge="vertical"
-            android:requiresFadingEdge="vertical"
-
-            android:src="@drawable/ic_portrait_black_24dp"
-
-            >
-
-
-        </ImageView>
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="9dp"
+        android:layout_marginBottom="10dp"
+        android:contentDescription="profile_image"
+        android:fadingEdge="vertical"
+        android:requiresFadingEdge="vertical"
+        android:src="@drawable/ic_portrait_black_24dp"
+        />
 
 
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="20dp"
 
+        android:gravity="center_horizontal"
+        >
 
         <Button
-            android:layout_width="100dp"
-            android:shadowRadius="5"
-
+            android:id="@+id/accept"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="555dp"
+            android:background="@drawable/shapelogin"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
             android:radius="100dp"
             android:shadowColor="@color/colorPrimary"
-            android:textSize="20dp"
-            android:layout_marginLeft="50dp"
+            android:shadowRadius="5"
+            android:text="Accept"
             android:textColor="@color/accept"
-            android:text="Accept">
-
-        </Button>
+            android:textSize="20sp" />
 
         <Button
-            android:layout_width="105dp"
-            android:shadowRadius="5"
+            android:id="@+id/decline"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="555dp"
-            android:textSize="20dp"
-            android:layout_marginLeft="200dp"
-            android:textColor="#e60000"
-            android:shadowColor="@color/colorPrimary"
+            android:layout_marginLeft="30dp"
+            android:background="@drawable/shapelogin"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
             android:radius="100dp"
-            android:text="Decline">
-        </Button>
-
-
-
-
-    </FrameLayout>
-
-
-</android.support.constraint.ConstraintLayout>
+            android:shadowColor="@color/colorPrimary"
+            android:shadowRadius="5"
+            android:text="Reject"
+            android:textColor="#e60000"
+            android:textSize="20sp" />
+    </LinearLayout>
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+</android.support.design.widget.CoordinatorLayout>
