@@ -6,6 +6,8 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.job.JobInfo;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -44,8 +46,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
+import androidx.work.Constraints;
+import androidx.work.Data;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
@@ -58,6 +63,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
     private RemoteMessage remoteMessage;
     private String saviourChannelId="999";
     private String alertChannelId="666";
+    Data uidData;
     private static HashMap<String,Boolean> subscribed=new HashMap<String, Boolean>(10); //a Hashmap to keep track of all subscribed topics
     String useruid;
     private static UpdateSaviourCountCallback updateSaviourCountCallback;
@@ -90,7 +96,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
 
                 if (/* Check if data needs to be processed by long running job */ !true) {
                     // For long-running tasks (10 seconds or more) use WorkManager.
-                    // scheduleJob();
+
                 } else {
                     // Handle message within 10 seconds
                     handleNow();
@@ -147,15 +153,20 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
         super.onNewToken(s);
     }
 
-/*
+
     private void scheduleJob() {
+
         // [START dispatch_job]
-        OneTimeWorkRequest work = new OneTimeWorkRequest.Builder(MyWorker.class)
+        Log.d(TAG,"Scheduling WorkRequest");
+        OneTimeWorkRequest work = new OneTimeWorkRequest.Builder(DeleteAlertWorker.class)
+                .setInitialDelay(1, TimeUnit.DAYS/*TimeUnit.MINUTES*/) //DELETE AFTER ONE DAY
+                .setInputData(uidData)
                 .build();
         WorkManager.getInstance().beginWith(work).enqueue();
         // [END dispatch_job]
+
     }
-*/
+
 
     /**
      * Handle time allotted to BroadcastReceivers.
@@ -175,7 +186,7 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
 
             alertDetails.setName((String) remoteMessage.getData().get("username"));
             alertDetails.setLocation((String) remoteMessage.getData().get("liveLocation"));
-            alertDetails.setUid((String) remoteMessage.getData().get("uid"));
+            alertDetails.setUid((String)remoteMessage.getData().get("uid") );
             FirebaseHelper firebaseHelper=FirebaseHelper.getInstance();
             StorageReference storageReference=firebaseHelper.getStorageReference_ofuid((String) remoteMessage.getData().get("uid"));
             alertDetails.setImageUrl(storageReference);
@@ -195,6 +206,14 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
 
             //show Notification
             showAlertNotfication(alertDetails.getName());
+
+            //add deletion code
+            uidData= new Data.Builder()
+                    .putString("uid",remoteMessage.getData().get("uid"))
+                    .build();
+
+            scheduleJob();
+
 
         }
         else{
