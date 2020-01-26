@@ -6,6 +6,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.TaskStackBuilder;
 import android.app.job.JobInfo;
 import android.content.ComponentName;
 import android.content.Context;
@@ -375,6 +376,8 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
     }
 
     public void showNotification(String title,String messageBody, boolean persistent, int id){
+        // Create an Intent for the activity you want to start
+
         String channelId=Integer.toString(id);
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
@@ -386,7 +389,18 @@ public class EmergencyMessagingService extends FirebaseMessagingService {
                         .setContentText(messageBody)
                         .setOngoing(persistent);
 
-
+        //make notification clickable if it is alert notification
+        if(id==Integer.parseInt(alertChannelId)){
+            Intent resultIntent = new Intent(this, navigation.class);
+            resultIntent.putExtra("saviour",true);
+// Create the TaskStackBuilder and add the intent, which inflates the back stack
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+            stackBuilder.addNextIntentWithParentStack(resultIntent);
+// Get the PendingIntent containing the entire back stack
+            PendingIntent resultPendingIntent =
+                    stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+            notificationBuilder.setContentIntent(resultPendingIntent);
+        }
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
