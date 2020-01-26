@@ -117,6 +117,11 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
         String uid=getIntent().getStringExtra("uid");
         HashMap<String, AlertDetails> detail=AlertObjects.getAllAlerts();
         ad=detail.get(uid);
+
+        if(Integer.parseInt(ad.getSaviourcount())!=0){
+            String newText="No of Saviours to rescue:"+ad.getSaviourcount();
+            updateSaviourCount(newText);
+        }
         //updateLocation(ad.getLocation());
         String victimLocation = ad.getLocation();
         Log.d("victimLocation","---"+victimLocation);
@@ -504,8 +509,12 @@ public class recent_cards extends AppCompatActivity implements UpdateSaviourCoun
     }
 
     private void removeMarker() {
-        mapView.getMapScene().removeMapMarker(mapMarkerAlert);
-        routing.clearMap();
+        try {
+            mapView.getMapScene().removeMapMarker(mapMarkerAlert);
+            routing.clearMap();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void updateSaviourCount(String newText){
